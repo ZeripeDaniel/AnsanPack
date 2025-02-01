@@ -1,6 +1,7 @@
 package com.ansan.ansanpack.events;
 
 import com.ansan.ansanpack.AnsanPack;
+import com.ansan.ansanpack.config.UpgradeConfigManager;
 import com.ansan.ansanpack.upgrade.WeaponUpgradeSystem;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
@@ -17,8 +18,13 @@ public class CombatEventHandler {
             ItemStack weapon = player.getMainHandItem();
 
             if (!weapon.isEmpty()) {
-                float damageMultiplier = WeaponUpgradeSystem.getDamageMultiplier(weapon);
-                event.setAmount(event.getAmount() * damageMultiplier);
+                UpgradeConfigManager.getConfig(weapon.getItem()).ifPresent(config -> {
+                    int level = WeaponUpgradeSystem.getCurrentLevel(weapon);
+                    if (level > 0 && config.effects.containsKey("damage_per_level")) {
+                        double damageBonus = config.effects.get("damage_per_level") * level;
+                        event.setAmount(event.getAmount() + (float)damageBonus);
+                    }
+                });
             }
         }
     }

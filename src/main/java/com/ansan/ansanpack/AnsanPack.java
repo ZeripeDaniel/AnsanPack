@@ -5,7 +5,7 @@ import com.ansan.ansanpack.common.events.AnvilEnchantTransferHandler;
 import com.ansan.ansanpack.config.ConfigManager;
 import com.ansan.ansanpack.config.EntityConfigManager;
 import com.ansan.ansanpack.config.RandomBoxConfigManager;
-import com.ansan.ansanpack.config.WeaponUpgradeConfig;
+import com.ansan.ansanpack.config.UpgradeConfigManager;
 import com.ansan.ansanpack.events.EntityAttributeModifier;
 import com.ansan.ansanpack.events.UpgradeSystemEventHandler;
 import com.ansan.ansanpack.gui.UpgradeContainer;
@@ -19,7 +19,9 @@ import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -73,13 +75,12 @@ public class AnsanPack {
 
         // 3. 강화 시스템 이벤트 리스너 등록
         MinecraftForge.EVENT_BUS.register(new UpgradeSystemEventHandler());
-
-
     }
     private void setup(final FMLCommonSetupEvent event) {
         ConfigManager.loadConfig();
         RandomBoxConfigManager.loadConfig();
         EntityConfigManager.loadConfig();
+        UpgradeConfigManager.loadConfig();
     }
 
     @SubscribeEvent
@@ -109,7 +110,7 @@ public class AnsanPack {
                 com.ansan.ansanpack.network.MessageUpgradeResult::handle);
 
         // 설정 파일 생성 보장
-        WeaponUpgradeConfig.load(); // 새로 추가되는 강화 설정 파일
+        //WeaponUpgradeConfig.load(); // 새로 추가되는 강화 설정 파일
     }
     private void clientSetup(final FMLClientSetupEvent event) {
         MenuScreens.register(UPGRADE_CONTAINER.get(), UpgradeScreen::new);

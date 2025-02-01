@@ -3,12 +3,16 @@ package com.ansan.ansanpack.gui;
 import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.item.ModItems;
 import com.ansan.ansanpack.upgrade.WeaponUpgradeSystem;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.registries.ForgeRegistries;
+import com.ansan.ansanpack.config.UpgradeConfigManager;
+import java.util.Optional;
 
 public class UpgradeContainer extends AbstractContainerMenu {
     private final UpgradeItemHandler itemHandler = new UpgradeItemHandler();
@@ -23,13 +27,13 @@ public class UpgradeContainer extends AbstractContainerMenu {
         super(AnsanPack.UPGRADE_CONTAINER.get(), windowId);
 
         // 강화 슬롯
-        this.upgradeSlot = this.addSlot(new Slot(new UpgradeItemHandler(), 0, 80, 20) {
+        this.upgradeSlot = this.addSlot(new Slot(itemHandler, 0, 80, 20) {
             @Override
             public boolean mayPlace(ItemStack stack) {
                 return stack.isDamageableItem();
             }
         });
-        this.reinforceStoneSlot = this.addSlot(new Slot(new UpgradeItemHandler(), 1, 80, 50) {
+        this.reinforceStoneSlot = this.addSlot(new Slot(itemHandler, 1, 80, 50) {
             @Override
             public boolean mayPlace(ItemStack stack) {
                 return stack.getItem() == ModItems.REINFORCE_STONE.get();
@@ -88,18 +92,24 @@ public class UpgradeContainer extends AbstractContainerMenu {
     public boolean upgradeItem() {
         ItemStack weapon = this.upgradeSlot.getItem();
         ItemStack stone = this.reinforceStoneSlot.getItem();
+
         if (!weapon.isEmpty() && !stone.isEmpty()) {
-            boolean success = WeaponUpgradeSystem.tryUpgrade(weapon, stone);
-            // 클라이언트에게 결과 전송 (네트워크 패킷 사용)
-            return success;
+            ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(weapon.getItem());
+            Optional<UpgradeConfigManager.ItemConfig> configOpt = UpgradeConfigManager.getItemConfig(itemId);
+
+            if (configOpt.isPresent()) {
+                boolean success = WeaponUpgradeSystem.tryUpgrade(weapon, stone);
+                return success;
+            }
         }
         return false;
     }
+
     public Slot getUpgradeSlot() {
-        return this.slots.get(0); // 0번 슬롯 반환
+        return this.upgradeSlot;
     }
 
     public Slot getReinforceStoneSlot() {
-        return this.slots.get(1); // 1번 슬롯 반환
+        return this.reinforceStoneSlot;
     }
 }

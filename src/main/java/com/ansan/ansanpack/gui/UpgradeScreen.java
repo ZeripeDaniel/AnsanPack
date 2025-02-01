@@ -1,6 +1,7 @@
 package com.ansan.ansanpack.gui;
 
 import com.ansan.ansanpack.AnsanPack;
+import com.ansan.ansanpack.config.UpgradeConfigManager;
 import com.ansan.ansanpack.gui.UpgradeContainer;
 import com.ansan.ansanpack.network.MessageUpgradeRequest;
 import com.ansan.ansanpack.upgrade.WeaponUpgradeSystem;
@@ -76,22 +77,11 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
 
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        super.renderLabels(guiGraphics, mouseX, mouseY);
-
-        // 강화 확률 표시 코드
-        UpgradeContainer upgradeContainer = (UpgradeContainer) this.menu;
-        ItemStack weapon = upgradeContainer.getUpgradeSlot().getItem();
-        if (!weapon.isEmpty()) {
-            float chance = WeaponUpgradeSystem.getCurrentChance(weapon) * 100;
-            String chanceText = String.format("성공률: %.1f%%", chance);
-            guiGraphics.drawString(
-                    this.font,
-                    Component.literal(chanceText),
-                    10, // x 좌표 (GUI 내부 기준)
-                    40, // y 좌표 (GUI 내부 기준)
-                    0x00FF00 // 초록색
-            );
-        }
+        ItemStack stack = menu.getUpgradeSlot().getItem();
+        UpgradeConfigManager.getConfig(stack.getItem()).ifPresent(config -> {
+            String chanceText = String.format("성공률: %.1f%%", WeaponUpgradeSystem.getUpgradeChance(stack)*100);
+            guiGraphics.drawString(font, chanceText, 10, 40, 0xFFFFFF);
+        });
     }
 
     private void tryUpgrade() {

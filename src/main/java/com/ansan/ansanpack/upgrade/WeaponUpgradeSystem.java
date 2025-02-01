@@ -1,52 +1,76 @@
 package com.ansan.ansanpack.upgrade;
 
-import com.ansan.ansanpack.AnsanPack;
-import com.ansan.ansanpack.config.WeaponUpgradeConfig;
+import com.ansan.ansanpack.config.UpgradeConfigManager;
 import com.ansan.ansanpack.item.ModItems;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.Optional;
 
 public class WeaponUpgradeSystem {
-    private static final String UPGRADE_LEVEL_TAG = "upgrade_level";
-    private static final float BASE_SUCCESS_CHANCE = 0.8f;
-    private static final float CHANCE_DECREASE_PER_LEVEL = 0.05f;
+    private static final String UPGRADE_TAG = "ansan_upgrade";
 
-    public static int getUpgradeLevel(ItemStack item) {
-        CompoundTag nbt = item.getOrCreateTag();
-        return nbt.getInt(UPGRADE_LEVEL_TAG);
+    public static boolean canUpgrade(ItemStack stack) {
+        return UpgradeConfigManager.getConfig(stack.getItem()).isPresent();
     }
 
-    public static void setUpgradeLevel(ItemStack item, int level) {
-        CompoundTag nbt = item.getOrCreateTag();
-        nbt.putInt(UPGRADE_LEVEL_TAG, level);
+    public static double getUpgradeChance(ItemStack stack) {
+        return UpgradeConfigManager.getConfig(stack.getItem())
+                .map(config -> {
+                    int level = getCurrentLevel(stack);
+                    return config.baseChance - (level * config.chanceDecrease);
+                })
+                .orElse(0.0);
     }
 
-    public static boolean tryUpgrade(ItemStack weapon, ItemStack reinforceStone) {
-        if (reinforceStone.getItem() != ModItems.REINFORCE_STONE.get()) {
-            return false;
+    public static int getCurrentLevel(ItemStack stack) {
+        CompoundTag tag = stack.getOrCreateTag();
+        return tag.getInt(UPGRADE_TAG);
+    }
+
+    public static void applyUpgrade(ItemStack stack, boolean success) {
+        UpgradeConfigManager.getConfig(stack.getItem()).ifPresent(config -> {
+            int currentLevel = getCurrentLevel(stack);
+            int newLevel = success ?
+                    Math.min(currentLevel + 1, config.maxLevel) :
+                    Math.max(currentLevel - 1, 0);
+
+            CompoundTag tag = stack.getOrCreateTag();
+            tag.putInt(UPGRADE_TAG, newLevel);
+            applyEffects(tag, config, newLevel);
+        });
+    }
+
+    private static void applyEffects(CompoundTag tag, UpgradeConfigManager.UpgradeConfig config, int level) {
+        config.effects.forEach((effect, value) -> {
+            switch(effect) {
+                case "damage_per_level":
+                    tag.putDouble("AttackDamage", 1.0 + (value * level));
+                    break;
+                case "armor_per_level":
+                    tag.putDouble("ArmorToughness", value * level);
+                    break;
+            }
+        });
+    }
+    // WeaponUpgradeSystem.java에 추가
+    public static boolean tryUpgrade(ItemStack weapon, ItemStack stone) {
+        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(weapon.getItem());
+        Optional<UpgradeConfigManager.ItemConfig> config = UpgradeConfigManager.getItemConfig(itemId);
+
+        if (config.isPresent() && stone.getItem() == ModItems.REINFORCE_STONE.get()) {
+            int currentLevel = getCurrentLevel(weapon);
+            double successChance = config.get().baseChance - (currentLevel * 0.05);
+            boolean success = Math.random() < successChance;
+
+            if(success) {
+                applyUpgrade(weapon, true);
+                stone.shrink(1);
+            }
+            return success;
         }
-
-        int currentLevel = getUpgradeLevel(weapon);
-        float successChance = BASE_SUCCESS_CHANCE - (currentLevel * CHANCE_DECREASE_PER_LEVEL);
-
-        if (Math.random() < successChance) {
-            setUpgradeLevel(weapon, currentLevel + 1);
-            reinforceStone.shrink(1); // 강화석 소비
-            return true;
-        } else {
-            reinforceStone.shrink(1); // 강화석 소비
-            return false;
-        }
-    }
-
-    public static float getDamageMultiplier(ItemStack item) {
-        int level = getUpgradeLevel(item);
-        return 1 + (level * 0.1f); // 각 레벨당 10% 데미지 증가
-    }
-    public static float getCurrentChance(ItemStack weapon) {
-        int level = getUpgradeLevel(weapon);
-        return WeaponUpgradeConfig.BASE_SUCCESS_CHANCE.get().floatValue()
-                - (level * WeaponUpgradeConfig.CHANCE_DECREASE_PER_LEVEL.get().floatValue());
+        return false;
     }
 }
