@@ -2,14 +2,17 @@ package com.ansan.ansanpack.gui;
 
 import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.item.ModItems;
+import com.ansan.ansanpack.network.MessageUpgradeResult;
 import com.ansan.ansanpack.upgrade.WeaponUpgradeSystem;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.registries.ForgeRegistries;
 import com.ansan.ansanpack.config.UpgradeConfigManager;
 import java.util.Optional;
@@ -90,11 +93,14 @@ public class UpgradeContainer extends AbstractContainerMenu {
         return itemstack;
     }
 
-    public boolean upgradeItem() {
+    public boolean upgradeItem(Player player) {
         ItemStack weapon = this.upgradeSlot.getItem();
         ItemStack stone = this.reinforceStoneSlot.getItem();
+
         if (!weapon.isEmpty() && !stone.isEmpty()) {
+
             Optional<UpgradeConfigManager.UpgradeConfig> config = UpgradeConfigManager.getConfig(weapon.getItem());
+
             if (config.isPresent()) {
                 int currentLevel = WeaponUpgradeSystem.getCurrentLevel(weapon);
 
@@ -104,6 +110,11 @@ public class UpgradeContainer extends AbstractContainerMenu {
                 }
 
                 boolean result = WeaponUpgradeSystem.tryUpgrade(weapon, stone);
+                AnsanPack.NETWORK.sendTo(
+                        new MessageUpgradeResult(result),
+                        ((ServerPlayer) player).connection.connection,
+                        NetworkDirection.PLAY_TO_CLIENT
+                );
                 return result;
             }
         }

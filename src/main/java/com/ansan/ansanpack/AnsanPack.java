@@ -109,6 +109,12 @@ public class AnsanPack {
                 com.ansan.ansanpack.network.MessageUpgradeResult::decode,
                 com.ansan.ansanpack.network.MessageUpgradeResult::handle);
 
+        NETWORK.registerMessage(0, com.ansan.ansanpack.network.SyncConfigPacket.class,
+                com.ansan.ansanpack.network.SyncConfigPacket::encode,
+                com.ansan.ansanpack.network.SyncConfigPacket::decode,
+                com.ansan.ansanpack.network.SyncConfigPacket::handle
+        );
+
     }
     private void clientSetup(final FMLClientSetupEvent event) {
         MenuScreens.register(UPGRADE_CONTAINER.get(), UpgradeScreen::new);

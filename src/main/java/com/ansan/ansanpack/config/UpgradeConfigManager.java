@@ -39,6 +39,16 @@ public class UpgradeConfigManager {
             return ForgeRegistries.ITEMS.getValue(item);
         }
     }
+    public static void loadConfigFromString(String jsonData) {
+        JsonObject root = JsonParser.parseString(jsonData).getAsJsonObject();
+        JsonArray upgrades = root.getAsJsonArray("upgrades");
+
+        ITEM_CONFIGS.clear();
+        for (JsonElement elem : upgrades) {
+            UpgradeConfig config = new UpgradeConfig(elem.getAsJsonObject());
+            ITEM_CONFIGS.put(config.item, config);
+        }
+    }
 
     public static void loadConfig() {
         Path configPath = FMLPaths.CONFIGDIR.get().resolve(CONFIG_FILE);

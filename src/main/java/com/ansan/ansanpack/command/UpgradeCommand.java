@@ -12,8 +12,8 @@ import net.minecraft.world.SimpleMenuProvider;
 
 public class UpgradeCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("upgrade")
-                .requires(source -> source.hasPermission(2)) // 테스트 용이므로 op만 가능
+        dispatcher.register(Commands.literal("강화하기")
+                .requires(source -> source.hasPermission(0)) // 테스트 용이므로 op만 가능
                 .executes(UpgradeCommand::executeUpgrade));
     }
 

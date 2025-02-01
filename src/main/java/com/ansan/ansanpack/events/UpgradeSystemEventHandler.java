@@ -20,6 +20,7 @@ import java.util.UUID;
 public class UpgradeSystemEventHandler {
     private static final UUID UPGRADE_DAMAGE_UUID = UUID.fromString("a5a6a7a8-1234-5678-9abc-def012345678");
     private static final UUID UPGRADE_ARMOR_UUID = UUID.fromString("b5b6b7b8-2345-6789-abcd-ef0123456789");
+    private static final UUID UPGRADE_ATSPD_UUID = UUID.fromString("c5c6c7c8-3456-7890-abcd-0123456789ab");
 
     @SubscribeEvent
     public static void onItemAttribute(ItemAttributeModifierEvent event) {
@@ -61,6 +62,9 @@ public class UpgradeSystemEventHandler {
                     else if (stack.getItem() instanceof SwordItem && (slot == EquipmentSlot.MAINHAND || slot == EquipmentSlot.OFFHAND)) {
                         if ("damage_per_level".equals(effect)) {
                             addModifier(event, Attributes.ATTACK_DAMAGE, UPGRADE_DAMAGE_UUID, "Weapon Damage Bonus", bonus);
+                        }
+                        if("attack_spd_level".equals(effect)) {
+                            addModifier(event, Attributes.ATTACK_SPEED, UPGRADE_ATSPD_UUID, "Attack Speed Bonus", bonus);
                         }
                     }
                 });

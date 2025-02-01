@@ -21,7 +21,7 @@ public class MessageUpgradeRequest {
         ctx.get().enqueueWork(() -> {
             ServerPlayer player = ctx.get().getSender();
             if (player != null && player.containerMenu instanceof UpgradeContainer container) {
-                boolean result = container.upgradeItem();
+                boolean result = container.upgradeItem(player);
                 // 결과를 클라이언트에게 전송
                 AnsanPack.NETWORK.sendTo(new MessageUpgradeResult(result), player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
             }

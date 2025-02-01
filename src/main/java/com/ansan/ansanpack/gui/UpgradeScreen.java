@@ -34,8 +34,8 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
         int y = (height - imageHeight) / 2;
 
         // 버튼 위치 계산 수정
-        int buttonX = x + imageWidth - 34; // GUI 오른쪽에서 34px 왼쪽
-        int buttonY = y + 8; // GUI 상단에서 8px 아래
+        int buttonX = x + imageWidth - 40; // GUI 오른쪽에서 38px 왼쪽
+        int buttonY = y + 38; // GUI 상단에서 40px 아래
         this.upgradeButton = this.addRenderableWidget(new UpgradeButton(buttonX, buttonY, button -> {
             this.tryUpgrade();
         }));
@@ -75,19 +75,13 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
         guiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
-
-        // 버튼 렌더링
-//        int buttonX = x + imageWidth - 34;
-//        int buttonY = y + 8;
-//        int buttonU = 176; // 버튼 텍스처의 U 좌표 (GUI 텍스처 내에서의 X 위치)
-//        int buttonV = upgradeButton.isHoveredOrFocused() ? 17 : 0; // 호버 상태에 따라 V 좌표 변경
-//        guiGraphics.blit(TEXTURE, buttonX, buttonY, buttonU, buttonV, 29, 17);
     }
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
+        renderTooltip(guiGraphics, mouseX, mouseY);
 
         // Null 체크 추가
         if (upgradeButton != null && upgradeButton.isHovered()) {
@@ -113,6 +107,7 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
 
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        super.renderLabels(guiGraphics, mouseX, mouseY); // 상위 클래스의 레이블
         // 강화 성공률 표시 위치 조정
         ItemStack stack = menu.getUpgradeSlot().getItem();
         UpgradeConfigManager.getConfig(stack.getItem()).ifPresent(config -> {
@@ -133,10 +128,10 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
         guiGraphics.drawString(
                 this.font,
                 this.resultText,
-                70, // X 좌표
-                90, // Y 좌표
+                35, // X 좌표
+                70, // Y 좌표
                 0xFFFFFF,
-                false
+                true
         );
     }
 
@@ -144,8 +139,9 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
     private void tryUpgrade() {
         // 강화 가능 여부 사전 체크
         ItemStack weapon = menu.getUpgradeSlot().getItem();
-        if (weapon.isEmpty()) {
-            resultText = Component.literal("강화할 아이템을 넣어주세요!").withStyle(ChatFormatting.RED);
+        ItemStack stone = menu.getReinforceStoneSlot().getItem();
+        if (weapon.isEmpty() || stone.isEmpty()) {
+            resultText = Component.literal("강화할 아이템과 강화석을 넣어주세요!").withStyle(ChatFormatting.RED);
             return;
         }
 

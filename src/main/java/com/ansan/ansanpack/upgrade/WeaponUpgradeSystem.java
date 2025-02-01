@@ -83,6 +83,7 @@ public class WeaponUpgradeSystem {
         return false;
     }
 
+    
     public static void addUpgradeTooltip(ItemStack stack, List<Component> tooltip) {
         int level = getCurrentLevel(stack);
         ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
