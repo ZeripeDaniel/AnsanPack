@@ -95,7 +95,7 @@ public class UpgradeContainer extends AbstractContainerMenu {
 
         if (!weapon.isEmpty() && !stone.isEmpty()) {
             ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(weapon.getItem());
-            Optional<UpgradeConfigManager.ItemConfig> configOpt = UpgradeConfigManager.getItemConfig(itemId);
+            Optional<UpgradeConfigManager.UpgradeConfig> configOpt = UpgradeConfigManager.getConfig(weapon.getItem());
 
             if (configOpt.isPresent()) {
                 boolean success = WeaponUpgradeSystem.tryUpgrade(weapon, stone);

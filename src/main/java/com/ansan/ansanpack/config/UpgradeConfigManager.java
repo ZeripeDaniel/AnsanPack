@@ -3,7 +3,6 @@ package com.ansan.ansanpack.config;
 import com.google.gson.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.Items;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -14,7 +13,7 @@ import java.util.*;
 
 public class UpgradeConfigManager {
     private static final String CONFIG_FILE = "ansanpack_upgrades.json";
-    private static final List<UpgradeConfig> CONFIGS = new ArrayList<>();
+    private static final Map<ResourceLocation, UpgradeConfig> ITEM_CONFIGS = new HashMap<>();
 
     public static class UpgradeConfig {
         public final ResourceLocation item;
@@ -22,17 +21,6 @@ public class UpgradeConfigManager {
         public final double baseChance;
         public final double chanceDecrease;
         public final Map<String, Double> effects;
-        private static final Map<ResourceLocation, ItemConfig> ITEM_CONFIGS = new HashMap<>();
-
-        public static class ItemConfig {
-            public final String type;
-            public final float baseChance;
-
-            public ItemConfig(String type, float baseChance) {
-                this.type = type;
-                this.baseChance = baseChance;
-            }
-        }
 
         public UpgradeConfig(JsonObject obj) {
             this.item = new ResourceLocation(obj.get("item").getAsString());
@@ -64,9 +52,10 @@ public class UpgradeConfigManager {
             JsonObject root = parser.parse(reader).getAsJsonObject();
             JsonArray upgrades = root.getAsJsonArray("upgrades");
 
-            CONFIGS.clear();
+            ITEM_CONFIGS.clear();
             for (JsonElement elem : upgrades) {
-                CONFIGS.add(new UpgradeConfig(elem.getAsJsonObject()));
+                UpgradeConfig config = new UpgradeConfig(elem.getAsJsonObject());
+                ITEM_CONFIGS.put(config.item, config);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -76,7 +65,6 @@ public class UpgradeConfigManager {
     private static void createDefaultConfig(Path path) {
         List<UpgradeConfig> defaults = new ArrayList<>();
 
-        // 기본 설정 예시
         JsonObject sample1 = new JsonObject();
         sample1.addProperty("item", "minecraft:diamond_sword");
         sample1.addProperty("max_level", 10);
@@ -115,12 +103,10 @@ public class UpgradeConfigManager {
 
     public static Optional<UpgradeConfig> getConfig(Item item) {
         ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(item);
-        return CONFIGS.stream()
-                .filter(c -> c.item.equals(itemId))
-                .findFirst();
+        return Optional.ofNullable(ITEM_CONFIGS.get(itemId));
     }
 
-    public static Optional<ItemConfig> getItemConfig(ResourceLocation itemId) {
+    public static Optional<UpgradeConfig> getItemConfig(ResourceLocation itemId) {
         return Optional.ofNullable(ITEM_CONFIGS.get(itemId));
     }
 }

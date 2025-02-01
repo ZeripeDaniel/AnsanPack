@@ -58,16 +58,17 @@ public class WeaponUpgradeSystem {
     // WeaponUpgradeSystem.java에 추가
     public static boolean tryUpgrade(ItemStack weapon, ItemStack stone) {
         ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(weapon.getItem());
-        Optional<UpgradeConfigManager.ItemConfig> config = UpgradeConfigManager.getItemConfig(itemId);
+        Optional<UpgradeConfigManager.UpgradeConfig> config = UpgradeConfigManager.getConfig(weapon.getItem());
 
         if (config.isPresent() && stone.getItem() == ModItems.REINFORCE_STONE.get()) {
             int currentLevel = getCurrentLevel(weapon);
-            double successChance = config.get().baseChance - (currentLevel * 0.05);
+            double successChance = config.get().baseChance - (currentLevel * config.get().chanceDecrease);
             boolean success = Math.random() < successChance;
+
+            stone.shrink(1);
 
             if(success) {
                 applyUpgrade(weapon, true);
-                stone.shrink(1);
             }
             return success;
         }
