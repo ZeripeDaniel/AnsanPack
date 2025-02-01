@@ -11,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.FriendlyByteBuf;
 
 public class UpgradeContainer extends AbstractContainerMenu {
+    private final UpgradeItemHandler itemHandler = new UpgradeItemHandler();
     private final Slot upgradeSlot;
     private final Slot reinforceStoneSlot;
 
@@ -93,5 +94,12 @@ public class UpgradeContainer extends AbstractContainerMenu {
             return success;
         }
         return false;
+    }
+    public Slot getUpgradeSlot() {
+        return this.slots.get(0); // 0번 슬롯 반환
+    }
+
+    public Slot getReinforceStoneSlot() {
+        return this.slots.get(1); // 1번 슬롯 반환
     }
 }

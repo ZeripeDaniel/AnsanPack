@@ -82,7 +82,7 @@ public class TransferCommand {
     }
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("transfer")
+        dispatcher.register(Commands.literal("송금")
                 .then(Commands.argument("player", StringArgumentType.string())
                         .suggests(PLAYER_SUGGESTIONS) // 자동 완성 추가
                         .then(Commands.argument("amount", IntegerArgumentType.integer(1))

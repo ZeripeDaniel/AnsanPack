@@ -1,17 +1,24 @@
 package com.ansan.ansanpack.gui;
 
 import com.ansan.ansanpack.AnsanPack;
+import com.ansan.ansanpack.gui.UpgradeContainer;
+import com.ansan.ansanpack.network.MessageUpgradeRequest;
+import com.ansan.ansanpack.upgrade.WeaponUpgradeSystem;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
 
 
 public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
+
+    private Component resultText = Component.empty(); // 이 줄 추가
     private static final ResourceLocation TEXTURE = new ResourceLocation(AnsanPack.MODID, "textures/gui/upgrade_gui.png");
 
     private Button upgradeButton;
@@ -22,10 +29,13 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
         super.init();
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
-        upgradeButton = addRenderableWidget(Button.builder(Component.literal("강화"), button -> {
-            // 버튼 클릭 시 실행될 코드
-        }).bounds(x + 70, y + 70, 60, 20).build());
 
+        int buttonX = x + imageWidth - 34;
+        int buttonY = y + 8;
+
+        upgradeButton = this.addRenderableWidget(Button.builder(Component.literal("강화"), button -> {
+            this.tryUpgrade();
+        }).bounds(buttonX, buttonY, 29, 17).build());
     }
     public UpgradeScreen(UpgradeContainer container, Inventory playerInventory, Component title) {
         super(container, playerInventory, title);
@@ -37,13 +47,57 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
         guiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
+
+        // 버튼 렌더링
+        int buttonX = x + imageWidth - 34;
+        int buttonY = y + 8;
+        int buttonU = 176; // 버튼 텍스처의 U 좌표 (GUI 텍스처 내에서의 X 위치)
+        int buttonV = upgradeButton.isHoveredOrFocused() ? 17 : 0; // 호버 상태에 따라 V 좌표 변경
+        guiGraphics.blit(TEXTURE, buttonX, buttonY, buttonU, buttonV, 29, 17);
     }
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        renderBackground(guiGraphics);
+        this.renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
-        renderTooltip(guiGraphics, mouseX, mouseY);
+        this.renderTooltip(guiGraphics, mouseX, mouseY);
+
+        // 버튼 위에 마우스를 올렸을 때 툴팁 렌더링
+        if (upgradeButton.isHovered()) {
+            guiGraphics.renderTooltip(this.font, Component.literal("아이템 강화"), mouseX, mouseY);
+        }
     }
+
+    public void handleUpgradeResult(boolean success) {
+        this.resultText = success ?
+                Component.literal("강화 성공!").withStyle(ChatFormatting.GREEN) :
+                Component.literal("강화 실패").withStyle(ChatFormatting.RED);
+    }
+
+    @Override
+    protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        super.renderLabels(guiGraphics, mouseX, mouseY);
+
+        // 강화 확률 표시 코드
+        UpgradeContainer upgradeContainer = (UpgradeContainer) this.menu;
+        ItemStack weapon = upgradeContainer.getUpgradeSlot().getItem();
+        if (!weapon.isEmpty()) {
+            float chance = WeaponUpgradeSystem.getCurrentChance(weapon) * 100;
+            String chanceText = String.format("성공률: %.1f%%", chance);
+            guiGraphics.drawString(
+                    this.font,
+                    Component.literal(chanceText),
+                    10, // x 좌표 (GUI 내부 기준)
+                    40, // y 좌표 (GUI 내부 기준)
+                    0x00FF00 // 초록색
+            );
+        }
+    }
+
+    private void tryUpgrade() {
+        // 클라이언트에서 서버로 강화 요청 전송
+        AnsanPack.NETWORK.sendToServer(new MessageUpgradeRequest());
+    }
+
 
 }

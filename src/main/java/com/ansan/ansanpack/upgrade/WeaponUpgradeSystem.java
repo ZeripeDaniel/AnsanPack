@@ -1,9 +1,11 @@
 package com.ansan.ansanpack.upgrade;
 
 import com.ansan.ansanpack.AnsanPack;
+import com.ansan.ansanpack.config.WeaponUpgradeConfig;
 import com.ansan.ansanpack.item.ModItems;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
+
 
 public class WeaponUpgradeSystem {
     private static final String UPGRADE_LEVEL_TAG = "upgrade_level";
@@ -41,5 +43,10 @@ public class WeaponUpgradeSystem {
     public static float getDamageMultiplier(ItemStack item) {
         int level = getUpgradeLevel(item);
         return 1 + (level * 0.1f); // 각 레벨당 10% 데미지 증가
+    }
+    public static float getCurrentChance(ItemStack weapon) {
+        int level = getUpgradeLevel(weapon);
+        return WeaponUpgradeConfig.BASE_SUCCESS_CHANCE.get().floatValue()
+                - (level * WeaponUpgradeConfig.CHANCE_DECREASE_PER_LEVEL.get().floatValue());
     }
 }

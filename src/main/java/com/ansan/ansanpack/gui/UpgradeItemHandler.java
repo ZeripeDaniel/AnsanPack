@@ -7,7 +7,7 @@ import net.minecraftforge.items.ItemStackHandler;
 
 public class UpgradeItemHandler extends ItemStackHandler implements Container {
     public UpgradeItemHandler() {
-        super(1);
+        super(2);
     }
 
     @Override
@@ -17,7 +17,7 @@ public class UpgradeItemHandler extends ItemStackHandler implements Container {
 
     @Override
     public int getContainerSize() {
-        return 1;
+        return 2;
     }
 
     @Override
