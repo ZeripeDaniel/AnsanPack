@@ -2,12 +2,11 @@ package com.ansan.ansanpack.events;
 
 import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.network.SyncConfigPacket;
+import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.event.server.ServerStartingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.network.PacketDistributor;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,13 +15,20 @@ import java.nio.file.Path;
 public class ServerEvents {
     @SubscribeEvent
     public static void onServerStart(ServerStartingEvent event) {
-        Path configPath = FMLPaths.CONFIGDIR.get().resolve("ansanpack_upgrades.json");
+        MinecraftServer server = event.getServer();
+        if (!server.isDedicatedServer()) return; // LAN 서버 방지
+
+        Path configPath = server.getServerDirectory().toPath()
+                .resolve("config").resolve("ansanpack_upgrades.json");
+
         try {
             String jsonData = new String(Files.readAllBytes(configPath));
-            // 모든 클라이언트에게 전송
-            AnsanPack.NETWORK.send(PacketDistributor.ALL.noArg(), new SyncConfigPacket(jsonData));
+            AnsanPack.NETWORK.send(
+                    PacketDistributor.ALL.noArg(),
+                    new SyncConfigPacket(jsonData)
+            );
         } catch (IOException e) {
-            e.printStackTrace();
+            AnsanPack.LOGGER.error("Failed to load upgrade config!", e);
         }
     }
 }

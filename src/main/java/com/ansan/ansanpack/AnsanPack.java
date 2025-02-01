@@ -8,6 +8,7 @@ import com.ansan.ansanpack.config.RandomBoxConfigManager;
 import com.ansan.ansanpack.config.UpgradeConfigManager;
 import com.ansan.ansanpack.events.EntityAttributeModifier;
 import com.ansan.ansanpack.events.UpgradeSystemEventHandler;
+import com.ansan.ansanpack.network.*;
 import com.ansan.ansanpack.gui.UpgradeContainer;
 import com.ansan.ansanpack.item.ModCreativeTabs;
 import com.ansan.ansanpack.item.ModItems;
@@ -50,7 +51,7 @@ public class AnsanPack {
                     s -> true
             );
 
-    private static final Logger LOGGER = LogManager.getLogger();
+    public static final Logger LOGGER = LogManager.getLogger();
 
     public AnsanPack() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -98,23 +99,22 @@ public class AnsanPack {
         // 4. 네트워크 패킷 등록
         int packetId = 0;
         NETWORK.registerMessage(packetId++,
-                com.ansan.ansanpack.network.MessageUpgradeRequest.class,
-                com.ansan.ansanpack.network.MessageUpgradeRequest::encode,
-                com.ansan.ansanpack.network.MessageUpgradeRequest::decode,
-                com.ansan.ansanpack.network.MessageUpgradeRequest::handle);
+                SyncConfigPacket.class,
+                SyncConfigPacket::encode,
+                SyncConfigPacket::decode,
+                SyncConfigPacket::handle);
 
         NETWORK.registerMessage(packetId++,
-                com.ansan.ansanpack.network.MessageUpgradeResult.class,
-                com.ansan.ansanpack.network.MessageUpgradeResult::encode,
-                com.ansan.ansanpack.network.MessageUpgradeResult::decode,
-                com.ansan.ansanpack.network.MessageUpgradeResult::handle);
+                MessageUpgradeRequest.class,
+                MessageUpgradeRequest::encode,
+                MessageUpgradeRequest::decode,
+                MessageUpgradeRequest::handle);
 
-        NETWORK.registerMessage(0, com.ansan.ansanpack.network.SyncConfigPacket.class,
-                com.ansan.ansanpack.network.SyncConfigPacket::encode,
-                com.ansan.ansanpack.network.SyncConfigPacket::decode,
-                com.ansan.ansanpack.network.SyncConfigPacket::handle
-        );
-
+        NETWORK.registerMessage(packetId++,
+                MessageUpgradeResult.class,
+                MessageUpgradeResult::encode,
+                MessageUpgradeResult::decode,
+                MessageUpgradeResult::handle);
     }
     private void clientSetup(final FMLClientSetupEvent event) {
         MenuScreens.register(UPGRADE_CONTAINER.get(), UpgradeScreen::new);

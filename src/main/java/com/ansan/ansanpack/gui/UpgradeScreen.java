@@ -146,7 +146,7 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
         }
 
         // 서버로 패킷 전송
-        AnsanPack.NETWORK.sendToServer(new MessageUpgradeRequest());
+        AnsanPack.NETWORK.sendToServer(new MessageUpgradeRequest(weapon, stone));
     }
 
 }
