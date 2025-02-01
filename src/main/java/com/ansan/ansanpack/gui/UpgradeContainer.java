@@ -27,13 +27,14 @@ public class UpgradeContainer extends AbstractContainerMenu {
         super(AnsanPack.UPGRADE_CONTAINER.get(), windowId);
 
         // 강화 슬롯
-        this.upgradeSlot = this.addSlot(new Slot(itemHandler, 0, 80, 20) {
+        this.upgradeSlot = this.addSlot(new Slot(itemHandler, 0, 55, 40) {
             @Override
             public boolean mayPlace(ItemStack stack) {
                 return stack.isDamageableItem();
             }
         });
-        this.reinforceStoneSlot = this.addSlot(new Slot(itemHandler, 1, 80, 50) {
+        //강화석 슬롯
+        this.reinforceStoneSlot = this.addSlot(new Slot(itemHandler, 1, 104, 40) {
             @Override
             public boolean mayPlace(ItemStack stack) {
                 return stack.getItem() == ModItems.REINFORCE_STONE.get();
@@ -92,14 +93,18 @@ public class UpgradeContainer extends AbstractContainerMenu {
     public boolean upgradeItem() {
         ItemStack weapon = this.upgradeSlot.getItem();
         ItemStack stone = this.reinforceStoneSlot.getItem();
-
         if (!weapon.isEmpty() && !stone.isEmpty()) {
-            ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(weapon.getItem());
-            Optional<UpgradeConfigManager.UpgradeConfig> configOpt = UpgradeConfigManager.getConfig(weapon.getItem());
+            Optional<UpgradeConfigManager.UpgradeConfig> config = UpgradeConfigManager.getConfig(weapon.getItem());
+            if (config.isPresent()) {
+                int currentLevel = WeaponUpgradeSystem.getCurrentLevel(weapon);
 
-            if (configOpt.isPresent()) {
-                boolean success = WeaponUpgradeSystem.tryUpgrade(weapon, stone);
-                return success;
+                // 최대 레벨 체크 추가
+                if (currentLevel >= config.get().maxLevel) {
+                    return false; // 이미 최대 레벨
+                }
+
+                boolean result = WeaponUpgradeSystem.tryUpgrade(weapon, stone);
+                return result;
             }
         }
         return false;
@@ -111,5 +116,17 @@ public class UpgradeContainer extends AbstractContainerMenu {
 
     public Slot getReinforceStoneSlot() {
         return this.reinforceStoneSlot;
+    }
+    @Override
+    public void removed(Player player) {
+        super.removed(player);
+        // 아이템이 사라지지 않도록 인벤토리로 반환
+        for (int i = 0; i < this.slots.size(); i++) {
+            Slot slot = this.slots.get(i);
+            if (slot.hasItem()) {
+                ItemStack itemStack = slot.remove(slot.getItem().getCount());
+                player.getInventory().placeItemBackInInventory(itemStack);
+            }
+        }
     }
 }

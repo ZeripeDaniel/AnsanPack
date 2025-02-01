@@ -21,7 +21,7 @@ public class UpgradeCommand {
         if (context.getSource().getEntity() instanceof ServerPlayer player) {
             player.openMenu(new SimpleMenuProvider(
                     (windowId, playerInventory, playerEntity) -> new UpgradeContainer(windowId, playerInventory),
-                    Component.literal("Upgrade GUI")
+                    Component.literal("")
             ));
             return 1;
         }

@@ -16,13 +16,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.Optional;
+
 
 public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
 
     private Component resultText = Component.empty(); // 이 줄 추가
     private static final ResourceLocation TEXTURE = new ResourceLocation(AnsanPack.MODID, "textures/gui/upgrade_gui.png");
 
-    private Button upgradeButton;
+    private UpgradeButton upgradeButton; // 버튼 변수명 일관성 유지
 
 
     @Override
@@ -31,12 +33,37 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
-        int buttonX = x + imageWidth - 34;
-        int buttonY = y + 8;
-
-        upgradeButton = this.addRenderableWidget(Button.builder(Component.literal("강화"), button -> {
+        // 버튼 위치 계산 수정
+        int buttonX = x + imageWidth - 34; // GUI 오른쪽에서 34px 왼쪽
+        int buttonY = y + 8; // GUI 상단에서 8px 아래
+        this.upgradeButton = this.addRenderableWidget(new UpgradeButton(buttonX, buttonY, button -> {
             this.tryUpgrade();
-        }).bounds(buttonX, buttonY, 29, 17).build());
+        }));
+    }
+    public static class UpgradeButton extends Button {
+        private static final ResourceLocation BUTTON_TEXTURE =
+                new ResourceLocation("ansanpack", "textures/gui/upgrade_button.png");
+
+        public UpgradeButton(int x, int y, OnPress onPress) {
+            super(x, y, 29, 17, Component.empty(), onPress, DEFAULT_NARRATION);
+        }
+
+        @Override
+        public void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+            // 텍스처 바인딩 추가
+            RenderSystem.setShaderTexture(0, BUTTON_TEXTURE);
+
+            // UV 좌표 계산 (호버 시 하단 텍스처)
+            int v = this.isHoveredOrFocused() ? 17 : 0;
+            guiGraphics.blit(
+                    BUTTON_TEXTURE,
+                    this.getX(),
+                    this.getY(),
+                    0, v,
+                    29, 17,
+                    29, 34
+            );
+        }
     }
     public UpgradeScreen(UpgradeContainer container, Inventory playerInventory, Component title) {
         super(container, playerInventory, title);
@@ -50,44 +77,80 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
         guiGraphics.blit(TEXTURE, x, y, 0, 0, imageWidth, imageHeight);
 
         // 버튼 렌더링
-        int buttonX = x + imageWidth - 34;
-        int buttonY = y + 8;
-        int buttonU = 176; // 버튼 텍스처의 U 좌표 (GUI 텍스처 내에서의 X 위치)
-        int buttonV = upgradeButton.isHoveredOrFocused() ? 17 : 0; // 호버 상태에 따라 V 좌표 변경
-        guiGraphics.blit(TEXTURE, buttonX, buttonY, buttonU, buttonV, 29, 17);
+//        int buttonX = x + imageWidth - 34;
+//        int buttonY = y + 8;
+//        int buttonU = 176; // 버튼 텍스처의 U 좌표 (GUI 텍스처 내에서의 X 위치)
+//        int buttonV = upgradeButton.isHoveredOrFocused() ? 17 : 0; // 호버 상태에 따라 V 좌표 변경
+//        guiGraphics.blit(TEXTURE, buttonX, buttonY, buttonU, buttonV, 29, 17);
     }
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(guiGraphics);
         super.render(guiGraphics, mouseX, mouseY, partialTick);
-        this.renderTooltip(guiGraphics, mouseX, mouseY);
 
-        // 버튼 위에 마우스를 올렸을 때 툴팁 렌더링
-        if (upgradeButton.isHovered()) {
-            guiGraphics.renderTooltip(this.font, Component.literal("아이템 강화"), mouseX, mouseY);
+        // Null 체크 추가
+        if (upgradeButton != null && upgradeButton.isHovered()) {
+            guiGraphics.renderTooltip(this.font,
+                    Component.literal("아이템 강화"),
+                    mouseX, mouseY
+            );
         }
     }
 
     public void handleUpgradeResult(boolean success) {
-        this.resultText = success ?
-                Component.literal("강화 성공!").withStyle(ChatFormatting.GREEN) :
-                Component.literal("강화 실패").withStyle(ChatFormatting.RED);
+        ItemStack weapon = menu.getUpgradeSlot().getItem();
+        Optional<UpgradeConfigManager.UpgradeConfig> config = UpgradeConfigManager.getConfig(weapon.getItem());
+
+        if (config.isPresent() && WeaponUpgradeSystem.getCurrentLevel(weapon) >= config.get().maxLevel) {
+            this.resultText = Component.literal("최대 강화 레벨 도달!").withStyle(ChatFormatting.YELLOW);
+        } else {
+            this.resultText = success
+                    ? Component.literal("강화 성공!").withStyle(ChatFormatting.GREEN)
+                    : Component.literal("강화 실패").withStyle(ChatFormatting.RED);
+        }
     }
 
     @Override
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        // 강화 성공률 표시 위치 조정
         ItemStack stack = menu.getUpgradeSlot().getItem();
         UpgradeConfigManager.getConfig(stack.getItem()).ifPresent(config -> {
-            String chanceText = String.format("성공률: %.1f%%", WeaponUpgradeSystem.getUpgradeChance(stack)*100);
-            guiGraphics.drawString(font, chanceText, 10, 40, 0xFFFFFF);
+            String chanceText = String.format("성공률: %.1f%%",
+                    WeaponUpgradeSystem.getUpgradeChance(stack)*100
+            );
+            guiGraphics.drawString(
+                    font,
+                    chanceText,
+                    8,  // X 좌표
+                    60, // Y 좌표
+                    0xFFFFFF,
+                    false // dropShadow
+            );
         });
+
+        // 결과 메시지 위치 조정
+        guiGraphics.drawString(
+                this.font,
+                this.resultText,
+                70, // X 좌표
+                90, // Y 좌표
+                0xFFFFFF,
+                false
+        );
     }
+
 
     private void tryUpgrade() {
-        // 클라이언트에서 서버로 강화 요청 전송
+        // 강화 가능 여부 사전 체크
+        ItemStack weapon = menu.getUpgradeSlot().getItem();
+        if (weapon.isEmpty()) {
+            resultText = Component.literal("강화할 아이템을 넣어주세요!").withStyle(ChatFormatting.RED);
+            return;
+        }
+
+        // 서버로 패킷 전송
         AnsanPack.NETWORK.sendToServer(new MessageUpgradeRequest());
     }
-
 
 }

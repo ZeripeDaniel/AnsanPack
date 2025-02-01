@@ -100,6 +100,13 @@ public class UpgradeConfigManager {
 
         return obj;
     }
+    public static double getEffectValue(ResourceLocation itemId, String effectKey) {
+        UpgradeConfig config = ITEM_CONFIGS.get(itemId);
+        if (config != null && config.effects.containsKey(effectKey)) {
+            return config.effects.get(effectKey);
+        }
+        return 0.0; // 기본값 반환
+    }
 
     public static Optional<UpgradeConfig> getConfig(Item item) {
         ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(item);

@@ -2,12 +2,18 @@ package com.ansan.ansanpack.upgrade;
 
 import com.ansan.ansanpack.config.UpgradeConfigManager;
 import com.ansan.ansanpack.item.ModItems;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ProjectileWeaponItem;
+import net.minecraft.world.item.SwordItem;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Optional;
+import java.util.List;
 
 public class WeaponUpgradeSystem {
     private static final String UPGRADE_TAG = "ansan_upgrade";
@@ -62,6 +68,7 @@ public class WeaponUpgradeSystem {
 
         if (config.isPresent() && stone.getItem() == ModItems.REINFORCE_STONE.get()) {
             int currentLevel = getCurrentLevel(weapon);
+            if (currentLevel >= config.get().maxLevel) return false;
             double successChance = config.get().baseChance - (currentLevel * config.get().chanceDecrease);
             boolean success = Math.random() < successChance;
 
@@ -69,9 +76,46 @@ public class WeaponUpgradeSystem {
 
             if(success) {
                 applyUpgrade(weapon, true);
+
             }
             return success;
         }
         return false;
     }
+
+    public static void addUpgradeTooltip(ItemStack stack, List<Component> tooltip) {
+        int level = getCurrentLevel(stack);
+        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
+        if (level > 0) {
+            tooltip.add(Component.literal("강화 레벨: +" + level).withStyle(ChatFormatting.GOLD));
+
+            double harmorValue = UpgradeConfigManager.getEffectValue(itemId, "helmet_armor");
+            double carmorValue = UpgradeConfigManager.getEffectValue(itemId, "chest_armor");
+            double larmorValue = UpgradeConfigManager.getEffectValue(itemId, "leggings_armor");
+            double barmorValue = UpgradeConfigManager.getEffectValue(itemId, "boots_armor");
+            double damageValue = UpgradeConfigManager.getEffectValue(itemId, "damage_per_level");
+            if (stack.getItem() instanceof ArmorItem) {
+                ArmorItem armor = (ArmorItem) stack.getItem();
+                ArmorItem.Type armorType = armor.getType();
+                switch (armorType) {
+                    case HELMET:
+                        tooltip.add(Component.literal("▶ 추가 방어력: +" + (level * harmorValue)).withStyle(ChatFormatting.BLUE));
+                        break;
+                    case CHESTPLATE:
+                        tooltip.add(Component.literal("▶ 추가 방어력: +" + (level * carmorValue)).withStyle(ChatFormatting.BLUE));
+                        break;
+                    case LEGGINGS:
+                        tooltip.add(Component.literal("▶ 추가 방어력: +" + (level * larmorValue)).withStyle(ChatFormatting.BLUE));
+                        break;
+                    case BOOTS:
+                        tooltip.add(Component.literal("▶ 추가 방어력: +" + (level * barmorValue)).withStyle(ChatFormatting.BLUE));
+                        break;
+                }
+            } else if (stack.getItem() instanceof SwordItem || stack.getItem() instanceof ProjectileWeaponItem) {
+                tooltip.add(Component.literal("▶ 추가 공격력: +" + (level * damageValue)).withStyle(ChatFormatting.RED));
+            }
+        }
+    }
+
+
 }

@@ -109,8 +109,6 @@ public class AnsanPack {
                 com.ansan.ansanpack.network.MessageUpgradeResult::decode,
                 com.ansan.ansanpack.network.MessageUpgradeResult::handle);
 
-        // 설정 파일 생성 보장
-        //WeaponUpgradeConfig.load(); // 새로 추가되는 강화 설정 파일
     }
     private void clientSetup(final FMLClientSetupEvent event) {
         MenuScreens.register(UPGRADE_CONTAINER.get(), UpgradeScreen::new);

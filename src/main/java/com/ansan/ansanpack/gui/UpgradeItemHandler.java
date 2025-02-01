@@ -60,4 +60,5 @@ public class UpgradeItemHandler extends ItemStackHandler implements Container {
     public void clearContent() {
         setStackInSlot(0, ItemStack.EMPTY);
     }
+
 }
