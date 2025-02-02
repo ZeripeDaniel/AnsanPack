@@ -11,54 +11,55 @@ import net.minecraftforge.network.NetworkDirection;
 import java.util.function.Supplier;
 
 public class MessageUpgradeRequest {
-    private final ItemStack weapon;
-    private final ItemStack stone;
-    public MessageUpgradeRequest(ItemStack weapon, ItemStack stone) {
-        this.weapon = weapon;
-        this.stone = stone;
+    private final int upgradeSlotIndex;
+    private final int stoneSlotIndex;
+
+
+    public MessageUpgradeRequest(int upgradeSlotIndex, int stoneSlotIndex) {
+        this.upgradeSlotIndex = upgradeSlotIndex;
+        this.stoneSlotIndex = stoneSlotIndex;
     }
 
     public static void encode(MessageUpgradeRequest msg, FriendlyByteBuf buffer) {
-        buffer.writeItem(msg.weapon); // 아이템 스택 직렬화
-        buffer.writeItem(msg.stone);
+        buffer.writeInt(msg.upgradeSlotIndex);
+        buffer.writeInt(msg.stoneSlotIndex);
     }
 
-
     public static MessageUpgradeRequest decode(FriendlyByteBuf buffer) {
-        return new MessageUpgradeRequest(
-                buffer.readItem(), // 아이템 스택 역직렬화
-                buffer.readItem()
-        );
+        return new MessageUpgradeRequest(buffer.readInt(), buffer.readInt());
     }
 
     public static void handle(MessageUpgradeRequest msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             ServerPlayer player = ctx.get().getSender();
-            if (player != null) {
-                // ▼▼▼ 로깅 추가 ▼▼▼
-                AnsanPack.LOGGER.info("[강화 시도] 플레이어: {}, 아이템: {}, 강화석: {}",
-                        player.getName().getString(),
-                        msg.weapon.getDisplayName().getString(),
-                        msg.stone.getDisplayName().getString()
-                );
+            if (player != null && player.containerMenu instanceof UpgradeContainer container) {
+                // 슬롯 인덱스로 실제 아이템 가져오기
+                ItemStack weapon = container.getSlot(msg.upgradeSlotIndex).getItem();
+                ItemStack stone = container.getSlot(msg.stoneSlotIndex).getItem();
 
-                boolean result = WeaponUpgradeSystem.tryUpgrade(msg.weapon, msg.stone);
+                if (!weapon.isEmpty() && !stone.isEmpty()) {
+                    boolean result = WeaponUpgradeSystem.tryUpgrade(weapon, stone);
 
-                // ▼▼▼ 결과 로깅 ▼▼▼
-                AnsanPack.LOGGER.info("[강화 결과] 플레이어: {}, 성공 여부: {}",
-                        player.getName().getString(),
-                        result ? "성공" : "실패"
-                );
+                    // 강화석 소모
+                    if (result) {
+                        stone.shrink(1);
+                        container.getSlot(msg.stoneSlotIndex).setChanged();
+                    }
 
-                AnsanPack.NETWORK.sendTo(
-                        new MessageUpgradeResult(result),
-                        player.connection.connection,
-                        NetworkDirection.PLAY_TO_CLIENT
-                );
-
+                    // 결과 전송
+                    AnsanPack.NETWORK.sendTo(
+                            new MessageUpgradeResult(result),
+                            player.connection.connection,
+                            NetworkDirection.PLAY_TO_CLIENT
+                    );
+                }
             }
         });
         ctx.get().setPacketHandled(true);
     }
 
+
+    private static boolean isValidUpgrade(ItemStack weapon, ItemStack stone) {
+        return !weapon.isEmpty() && !stone.isEmpty() && weapon.isDamageableItem();
+    }
 }

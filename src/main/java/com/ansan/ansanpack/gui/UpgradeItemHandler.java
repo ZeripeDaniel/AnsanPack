@@ -1,9 +1,11 @@
 package com.ansan.ansanpack.gui;
 
+import com.ansan.ansanpack.item.ModItems;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.ItemStackHandler;
+import org.jetbrains.annotations.NotNull;
 
 public class UpgradeItemHandler extends ItemStackHandler implements Container {
     public UpgradeItemHandler() {
@@ -11,8 +13,13 @@ public class UpgradeItemHandler extends ItemStackHandler implements Container {
     }
 
     @Override
-    public boolean isItemValid(int slot, ItemStack stack) {
-        return stack.isDamageableItem();
+    public boolean isItemValid(int slot, @NotNull ItemStack stack) {
+        if (slot == 0) {
+            return stack.isDamageableItem();
+        } else if (slot == 1) {
+            return stack.getItem() == ModItems.REINFORCE_STONE.get();
+        }
+        return false;
     }
 
     @Override
@@ -22,7 +29,12 @@ public class UpgradeItemHandler extends ItemStackHandler implements Container {
 
     @Override
     public boolean isEmpty() {
-        return getStackInSlot(0).isEmpty();
+        for (int i = 0; i < getSlots(); i++) {
+            if (!getStackInSlot(i).isEmpty()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -49,6 +61,8 @@ public class UpgradeItemHandler extends ItemStackHandler implements Container {
 
     @Override
     public void setChanged() {
+        // 변경 사항을 알리는 로직 추가
+        // 예: 컨테이너 GUI 업데이트
     }
 
     @Override
@@ -58,7 +72,8 @@ public class UpgradeItemHandler extends ItemStackHandler implements Container {
 
     @Override
     public void clearContent() {
-        setStackInSlot(0, ItemStack.EMPTY);
+        for (int i = 0; i < getSlots(); i++) {
+            setStackInSlot(i, ItemStack.EMPTY);
+        }
     }
-
 }

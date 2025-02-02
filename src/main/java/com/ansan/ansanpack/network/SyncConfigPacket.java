@@ -60,7 +60,7 @@ public class SyncConfigPacket {
     public static void handle(SyncConfigPacket msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             try {
-                AnsanPack.LOGGER.info("Received JSON data length: {}", msg.jsonData.length());
+                AnsanPack.LOGGER.info("리시브 json 데이터 싱크컨피그패킷: {}", msg.jsonData.length());
                 UpgradeConfigManager.loadConfigFromString(msg.jsonData);
             } catch (Exception e) {
                 AnsanPack.LOGGER.error("패킷 처리 실패", e);

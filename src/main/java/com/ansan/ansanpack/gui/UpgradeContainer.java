@@ -4,7 +4,6 @@ import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.item.ModItems;
 import com.ansan.ansanpack.network.MessageUpgradeResult;
 import com.ansan.ansanpack.upgrade.WeaponUpgradeSystem;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
@@ -13,14 +12,13 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkDirection;
-import net.minecraftforge.registries.ForgeRegistries;
 import com.ansan.ansanpack.config.UpgradeConfigManager;
 import java.util.Optional;
 
 public class UpgradeContainer extends AbstractContainerMenu {
     private final UpgradeItemHandler itemHandler = new UpgradeItemHandler();
-    private final Slot upgradeSlot;
-    private final Slot reinforceStoneSlot;
+    public final Slot upgradeSlot;
+    public final Slot reinforceStoneSlot;
 
     public UpgradeContainer(int windowId, Inventory playerInventory, FriendlyByteBuf extraData) {
         this(windowId, playerInventory);
@@ -128,6 +126,7 @@ public class UpgradeContainer extends AbstractContainerMenu {
     public Slot getReinforceStoneSlot() {
         return this.reinforceStoneSlot;
     }
+
     @Override
     public void removed(Player player) {
         super.removed(player);

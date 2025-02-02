@@ -26,6 +26,7 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -78,10 +79,12 @@ public class AnsanPack {
         MinecraftForge.EVENT_BUS.register(new UpgradeSystemEventHandler());
     }
     private void setup(final FMLCommonSetupEvent event) {
-        ConfigManager.loadConfig();
-        RandomBoxConfigManager.loadConfig();
-        EntityConfigManager.loadConfig();
-        UpgradeConfigManager.loadConfig();
+        if (FMLEnvironment.dist.isDedicatedServer()) {
+            ConfigManager.loadConfig();
+            RandomBoxConfigManager.loadConfig();
+            EntityConfigManager.loadConfig();
+            UpgradeConfigManager.loadConfig();
+        }
     }
 
     @SubscribeEvent
@@ -118,6 +121,6 @@ public class AnsanPack {
     }
     private void clientSetup(final FMLClientSetupEvent event) {
         MenuScreens.register(UPGRADE_CONTAINER.get(), UpgradeScreen::new);
-
     }
+
 }

@@ -32,11 +32,14 @@ public class MessageUpgradeResult {
                 if (Minecraft.getInstance().screen instanceof UpgradeScreen screen) {
                     screen.handleUpgradeResult(msg.success);
                     // ▼▼▼ GUI 업데이트 로깅 ▼▼▼
+                    Minecraft.getInstance().player.inventoryMenu.broadcastChanges();
                     AnsanPack.LOGGER.debug("강화 결과 화면 업데이트 완료");
                 }
                 SoundEventHandler.handleUpgradeSound(msg, ctx.get());
                 // ▼▼▼ 사운드 재생 로깅 ▼▼▼
                 AnsanPack.LOGGER.debug("사운드 재생: {}", msg.success ? "폭죽" : "TNT");
+                assert Minecraft.getInstance().player != null;
+                Minecraft.getInstance().player.inventoryMenu.broadcastChanges();
             });
         });
         ctx.get().setPacketHandled(true);

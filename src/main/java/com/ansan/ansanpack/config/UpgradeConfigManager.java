@@ -3,6 +3,7 @@ package com.ansan.ansanpack.config;
 import com.google.gson.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.loading.FMLPaths;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -51,6 +52,8 @@ public class UpgradeConfigManager {
     }
 
     public static void loadConfig() {
+        if (FMLEnvironment.dist.isClient()) return;
+
         Path configPath = FMLPaths.CONFIGDIR.get().resolve(CONFIG_FILE);
 
         if (!Files.exists(configPath)) {
@@ -72,7 +75,7 @@ public class UpgradeConfigManager {
         }
     }
 
-    private static void createDefaultConfig(Path path) {
+    public static void createDefaultConfig(Path path) {
         List<UpgradeConfig> defaults = new ArrayList<>();
 
         JsonObject sample1 = new JsonObject();
@@ -124,6 +127,9 @@ public class UpgradeConfigManager {
     }
 
     public static Optional<UpgradeConfig> getItemConfig(ResourceLocation itemId) {
+        if (FMLEnvironment.dist.isClient()) {
+            return Optional.empty(); // 클라이언트 측에서 서버 설정 없으면 무시
+        }
         return Optional.ofNullable(ITEM_CONFIGS.get(itemId));
     }
 }

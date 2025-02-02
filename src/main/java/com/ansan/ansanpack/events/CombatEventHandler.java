@@ -13,19 +13,28 @@ import net.minecraft.world.item.ItemStack;
 public class CombatEventHandler {
     @SubscribeEvent
     public static void onLivingHurt(LivingHurtEvent event) {
-        if (event.getSource().getEntity() instanceof Player) {
-            Player player = (Player) event.getSource().getEntity();
-            ItemStack weapon = player.getMainHandItem();
+        if (event.getEntity().level().isClientSide) return;
+        if (!(event.getSource().getEntity() instanceof Player player)) return;
 
-            if (!weapon.isEmpty()) {
-                UpgradeConfigManager.getConfig(weapon.getItem()).ifPresent(config -> {
-                    int level = WeaponUpgradeSystem.getCurrentLevel(weapon);
-                    if (level > 0 && config.effects.containsKey("damage_per_level")) {
-                        double damageBonus = config.effects.get("damage_per_level") * level;
-                        event.setAmount(event.getAmount() + (float)damageBonus);
-                    }
-                });
+        ItemStack weapon = player.getMainHandItem();
+        if (weapon.isEmpty()) return;
+
+        UpgradeConfigManager.getConfig(weapon.getItem()).ifPresent(config -> {
+            int level = WeaponUpgradeSystem.getCurrentLevel(weapon);
+            if (level > 0 && config.effects.containsKey("damage_per_level")) {
+                double damageBonus = config.effects.get("damage_per_level") * level;
+                float finalDamage = event.getAmount() + (float) damageBonus;
+                event.setAmount(finalDamage);
+
+                AnsanPack.LOGGER.info("레벨: {}, 보너스: {}", level, damageBonus);
+                // ▼▼▼ 로깅 추가 ▼▼▼
+                AnsanPack.LOGGER.info("[전투] {}의 {} 강화 데미지 적용: {} → {}",
+                        player.getName().getString(),
+                        weapon.getDisplayName().getString(),
+                        event.getAmount(),
+                        finalDamage
+                );
             }
-        }
+        });
     }
 }

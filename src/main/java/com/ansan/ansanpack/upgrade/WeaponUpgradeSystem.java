@@ -1,5 +1,6 @@
 package com.ansan.ansanpack.upgrade;
 
+import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.config.UpgradeConfigManager;
 import com.ansan.ansanpack.item.ModItems;
 import net.minecraft.ChatFormatting;
@@ -23,17 +24,22 @@ public class WeaponUpgradeSystem {
     }
 
     public static double getUpgradeChance(ItemStack stack) {
-        return UpgradeConfigManager.getConfig(stack.getItem())
-                .map(config -> {
-                    int level = getCurrentLevel(stack);
-                    return config.baseChance - (level * config.chanceDecrease);
-                })
-                .orElse(0.0);
+        Optional<UpgradeConfigManager.UpgradeConfig> config = UpgradeConfigManager.getConfig(stack.getItem());
+        if (config.isPresent()) {
+            int currentLevel = getCurrentLevel(stack);
+            // ▼▼▼ 현재 레벨을 반영한 확률 계산 ▼▼▼
+            return Math.max(0, config.get().baseChance - (currentLevel * config.get().chanceDecrease));
+        }
+        return 0;
     }
 
     public static int getCurrentLevel(ItemStack stack) {
-        CompoundTag tag = stack.getOrCreateTag();
-        return tag.getInt(UPGRADE_TAG);
+        // ▼▼▼ NBT 존재 여부 체크 강화 ▼▼▼
+        if (!stack.hasTag()) return 0;
+
+        CompoundTag tag = stack.getTag();
+        assert tag != null;
+        return tag.contains("ansan_upgrade_level") ? tag.getInt("ansan_upgrade_level") : 0;
     }
 
     public static void applyUpgrade(ItemStack stack, boolean success) {
@@ -63,27 +69,34 @@ public class WeaponUpgradeSystem {
     }
     // WeaponUpgradeSystem.java에 추가
     public static boolean tryUpgrade(ItemStack weapon, ItemStack stone) {
-        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(weapon.getItem());
-        Optional<UpgradeConfigManager.UpgradeConfig> config = UpgradeConfigManager.getConfig(weapon.getItem());
+        int currentLevel = getCurrentLevel(weapon);
 
-        if (config.isPresent() && stone.getItem() == ModItems.REINFORCE_STONE.get()) {
-            int currentLevel = getCurrentLevel(weapon);
-            if (currentLevel >= config.get().maxLevel) return false;
-            double successChance = config.get().baseChance - (currentLevel * config.get().chanceDecrease);
+        AnsanPack.LOGGER.info("강화 전 레벨: {}", currentLevel);
+
+        // 강화 성공 여부 계산
+        Optional<UpgradeConfigManager.UpgradeConfig> configOpt = UpgradeConfigManager.getConfig(weapon.getItem());
+        if (configOpt.isPresent()) {
+            UpgradeConfigManager.UpgradeConfig config = configOpt.get();
+            double successChance = Math.max(0, config.baseChance - (currentLevel * config.chanceDecrease));
             boolean success = Math.random() < successChance;
 
-            stone.shrink(1);
+            AnsanPack.LOGGER.info("강화 시도 - 성공 확률: {}%, 결과: {}", successChance * 100, success ? "성공" : "실패");
 
-            if(success) {
-                applyUpgrade(weapon, true);
-
+            if (success) {
+                CompoundTag tag = weapon.getOrCreateTag();
+                tag.putInt("ansan_upgrade_level", currentLevel + 1);
+                weapon.setTag(tag);
+                weapon.setCount(weapon.getCount()); // 아이템 갱신 트리거
+                AnsanPack.LOGGER.info("강화 후 레벨: {}", tag.getInt("ansan_upgrade_level"));
+                AnsanPack.LOGGER.info("NBT 저장 확인: {}", tag); // 로깅 추가
             }
             return success;
         }
         return false;
     }
 
-    
+
+
     public static void addUpgradeTooltip(ItemStack stack, List<Component> tooltip) {
         int level = getCurrentLevel(stack);
         ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
