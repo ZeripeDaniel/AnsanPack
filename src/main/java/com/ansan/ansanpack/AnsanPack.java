@@ -56,26 +56,28 @@ public class AnsanPack {
 
     public AnsanPack() {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+
+        modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::setup);
+        modEventBus.addListener(this::clientSetup);
 
         // Register items and creative tabs
         ModItems.ITEMS.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
+        MENUS.register(modEventBus);
 
         // Register CoinInteractionHandler to the Forge event bus
         MinecraftForge.EVENT_BUS.register(new CoinInteractionHandler());
         MinecraftForge.EVENT_BUS.register(new EntityAttributeModifier());
 
-        // Register commands
-        MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.register(AnvilEnchantTransferHandler.class);
 
+        MinecraftForge.EVENT_BUS.register(AnvilEnchantTransferHandler.class);
         // 3. 강화 시스템 이벤트 리스너 등록
         MinecraftForge.EVENT_BUS.register(new UpgradeSystemEventHandler());
 
-        MENUS.register(modEventBus);
-        modEventBus.addListener(this::commonSetup);
-        modEventBus.addListener(this::clientSetup);
+        MinecraftForge.EVENT_BUS.register(this);
+
+
 
     }
     private void setup(final FMLCommonSetupEvent event) {
@@ -85,7 +87,6 @@ public class AnsanPack {
             EntityConfigManager.loadConfig();
             UpgradeConfigManager.loadConfigFromMySQL(); // 🔥 여기 추가
         }
-        commonSetup(event);
     }
 
     @SubscribeEvent
@@ -99,22 +100,21 @@ public class AnsanPack {
         UpgradeCommand.register(event.getDispatcher()); // 새로운 명령어 등록
     }
     private void commonSetup(final FMLCommonSetupEvent event) {
-        // 공통 설정
-        // 4. 네트워크 패킷 등록
-        int packetId = 0;
+        event.enqueueWork(() -> {
+            int packetId = 0;
 
-        NETWORK.registerMessage(packetId++,
-                MessageUpgradeRequest.class,
-                MessageUpgradeRequest::encode,
-                MessageUpgradeRequest::decode,
-                MessageUpgradeRequest::handle);
+            AnsanPack.NETWORK.registerMessage(packetId++,
+                    MessageUpgradeRequest.class,
+                    MessageUpgradeRequest::encode,
+                    MessageUpgradeRequest::decode,
+                    MessageUpgradeRequest::handle);
 
-        NETWORK.registerMessage(packetId++,
-                MessageUpgradeResult.class,
-                MessageUpgradeResult::encode,
-                MessageUpgradeResult::decode,
-                MessageUpgradeResult::handle);
-
+            AnsanPack.NETWORK.registerMessage(packetId++,
+                    MessageUpgradeResult.class,
+                    MessageUpgradeResult::encode,
+                    MessageUpgradeResult::decode,
+                    MessageUpgradeResult::handle);
+        });
     }
     private void clientSetup(final FMLClientSetupEvent event) {
         MenuScreens.register(UPGRADE_CONTAINER.get(), UpgradeScreen::new);

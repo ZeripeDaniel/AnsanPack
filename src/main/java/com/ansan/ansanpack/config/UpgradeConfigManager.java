@@ -131,4 +131,12 @@ public class UpgradeConfigManager {
     public static Optional<UpgradeConfig> getItemConfig(ResourceLocation itemId) {
         return Optional.ofNullable(ITEM_CONFIGS.get(itemId));
     }
+
+    public static double getAnyEffectValue(ResourceLocation itemId, String... effectKeys) {
+        for (String key : effectKeys) {
+            double value = getEffectValue(itemId, key);
+            if (value != 0.0) return value;
+        }
+        return 0.0;
+    }
 }

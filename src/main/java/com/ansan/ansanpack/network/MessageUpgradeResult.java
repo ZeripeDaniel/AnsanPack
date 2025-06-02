@@ -15,11 +15,14 @@ public class MessageUpgradeResult {
         this.success = success;
     }
     public static void encode(MessageUpgradeResult msg, FriendlyByteBuf buffer) {
+        AnsanPack.LOGGER.debug("[Packet] Encoding UpgradeResult: " + msg.success);
         buffer.writeBoolean(msg.success);
     }
 
     public static MessageUpgradeResult decode(FriendlyByteBuf buffer) {
-        return new MessageUpgradeResult(buffer.readBoolean());
+        boolean result = buffer.readBoolean();
+        AnsanPack.LOGGER.debug("Result decode upgrade result: {}", result);
+        return new MessageUpgradeResult(result);
     }
 
     // MessageUpgradeResult.java 26-28번 라인 수정

@@ -22,6 +22,7 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
     private static final ResourceLocation TEXTURE = new ResourceLocation(AnsanPack.MODID, "textures/gui/upgrade_gui.png");
     private UpgradeButton upgradeButton;
     private double currentChance = 0.0;
+    private double wtfchange ;
     private int currentLevel = 0;
 
     public UpgradeScreen(UpgradeContainer container, Inventory playerInventory, Component title) {
@@ -47,7 +48,8 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
         ItemStack stack = menu.getUpgradeSlot().getItem();
         UpgradeConfigManager.getConfig(stack.getItem()).ifPresent(config -> {
             this.currentLevel = WeaponUpgradeSystem.getCurrentLevel(stack);
-            this.currentChance = Math.max(0, config.baseChance - (currentLevel * config.chanceDecrease));
+            this.currentChance = WeaponUpgradeSystem.getUpgradeChance(stack);  // ← 확률 메서드 사용
+            wtfchange = WeaponUpgradeSystem.getUpgradeChance(stack);  // ← 확률 메서드 사용
         });
     }
 
@@ -94,7 +96,7 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
         super.renderLabels(guiGraphics, mouseX, mouseY);
         refreshUpgradeInfo();
 
-        String chanceText = String.format("성공률: %.1f%%", currentChance * 100);
+        String chanceText = String.format("성공률: %.1f%%", wtfchange * 100);
         guiGraphics.drawString(font, chanceText, 8, 60, 0xFFFFFF);
 
         guiGraphics.drawString(
@@ -145,6 +147,7 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
         }
 
         AnsanPack.NETWORK.sendToServer(new MessageUpgradeRequest(upgradeSlotIndex, stoneSlotIndex));
+        AnsanPack.LOGGER.debug("패킷 전송 시작: 업그레이드 슬롯={}, 강화석 슬롯={}", upgradeSlotIndex, stoneSlotIndex);
     }
 
     public static class UpgradeButton extends Button {
