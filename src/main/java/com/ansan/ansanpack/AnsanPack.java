@@ -2,10 +2,7 @@ package com.ansan.ansanpack;
 
 import com.ansan.ansanpack.command.*;
 import com.ansan.ansanpack.common.events.AnvilEnchantTransferHandler;
-import com.ansan.ansanpack.config.ConfigManager;
-import com.ansan.ansanpack.config.EntityConfigManager;
-import com.ansan.ansanpack.config.RandomBoxConfigManager;
-import com.ansan.ansanpack.config.UpgradeConfigManager;
+import com.ansan.ansanpack.config.*;
 import com.ansan.ansanpack.events.EntityAttributeModifier;
 import com.ansan.ansanpack.events.UpgradeSystemEventHandler;
 import com.ansan.ansanpack.network.*;
@@ -86,6 +83,7 @@ public class AnsanPack {
             RandomBoxConfigManager.loadConfig();
             EntityConfigManager.loadConfig();
             UpgradeConfigManager.loadConfigFromMySQL(); // 🔥 여기 추가
+            UpgradeChanceManager.loadChancesFromMySQL(); // 강화 확률도 MySQL에서 불러오기
         }
     }
 
@@ -114,6 +112,12 @@ public class AnsanPack {
                     MessageUpgradeResult::encode,
                     MessageUpgradeResult::decode,
                     MessageUpgradeResult::handle);
+
+            AnsanPack.NETWORK.registerMessage(packetId++,
+                    MessageUpgradeChanceSync.class,
+                    MessageUpgradeChanceSync::encode,
+                    MessageUpgradeChanceSync::decode,
+                    MessageUpgradeChanceSync::handle);
         });
     }
     private void clientSetup(final FMLClientSetupEvent event) {

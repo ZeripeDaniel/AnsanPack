@@ -39,9 +39,15 @@ public class UpgradeChanceManager {
 
     public static double getSuccessChance(ResourceLocation itemId, int level) {
         Map<Integer, Double> levelMap = CHANCES.get(itemId.toString());
-        if (levelMap != null) {
-            return levelMap.getOrDefault(level, 0.0);
+        if (levelMap == null) {
+            System.out.println("[AnsanPack][확률X] itemId 미존재: " + itemId);
+            return 0.0;
         }
-        return 0.0;
+        if (!levelMap.containsKey(level)) {
+            System.out.println("[AnsanPack][확률X] 해당 레벨 없음: " + level + " for " + itemId);
+            return 0.0;
+        }
+        return levelMap.get(level);
     }
+
 }

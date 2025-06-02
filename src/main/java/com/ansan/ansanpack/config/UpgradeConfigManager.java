@@ -3,7 +3,6 @@ package com.ansan.ansanpack.config;
 import com.google.gson.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.io.IOException;
@@ -19,28 +18,11 @@ public class UpgradeConfigManager {
     public static class UpgradeConfig {
         public final ResourceLocation item;
         public final int maxLevel;
-        public final double baseChance;
-        public final double chanceDecrease;
         public final Map<String, Double> effects;
 
-        public UpgradeConfig(JsonObject obj) {
-            this.item = new ResourceLocation(obj.get("item").getAsString());
-            this.maxLevel = obj.get("max_level").getAsInt();
-            this.baseChance = obj.get("base_chance").getAsDouble();
-            this.chanceDecrease = obj.get("chance_decrease").getAsDouble();
-
-            this.effects = new HashMap<>();
-            JsonObject effectsObj = obj.getAsJsonObject("effects");
-            for (Map.Entry<String, JsonElement> entry : effectsObj.entrySet()) {
-                effects.put(entry.getKey(), entry.getValue().getAsDouble());
-            }
-        }
-
-        public UpgradeConfig(ResourceLocation item, int maxLevel, double baseChance, double chanceDecrease, Map<String, Double> effects) {
+        public UpgradeConfig(ResourceLocation item, int maxLevel, Map<String, Double> effects) {
             this.item = item;
             this.maxLevel = maxLevel;
-            this.baseChance = baseChance;
-            this.chanceDecrease = chanceDecrease;
             this.effects = effects;
         }
 
@@ -52,6 +34,38 @@ public class UpgradeConfigManager {
     public static void loadConfigFromMySQL() {
         ITEM_CONFIGS.clear();
 
+        Properties props = loadDbProps();
+        String url = "jdbc:mysql://" + props.getProperty("db.host") + ":" + props.getProperty("db.port") + "/" +
+                props.getProperty("db.database") + "?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true";
+
+        try (Connection conn = DriverManager.getConnection(url, props.getProperty("db.user"), props.getProperty("db.password"))) {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM upgrades");
+
+            while (rs.next()) {
+                ResourceLocation itemId = new ResourceLocation(rs.getString("item_id"));
+                int maxLevel = rs.getInt("max_level");
+
+                Map<String, Double> effects = new HashMap<>();
+                try (PreparedStatement effectStmt = conn.prepareStatement("SELECT effect_key, effect_value FROM upgrade_effects WHERE item_id = ?")) {
+                    effectStmt.setString(1, itemId.toString());
+                    ResultSet ers = effectStmt.executeQuery();
+                    while (ers.next()) {
+                        effects.put(ers.getString("effect_key"), ers.getDouble("effect_value"));
+                    }
+                }
+
+                UpgradeConfig config = new UpgradeConfig(itemId, maxLevel, effects);
+                ITEM_CONFIGS.put(itemId, config);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("[AnsanPack] MySQL 접속 실패: " + url + "\n원인: " + e.getMessage(), e);
+        }
+    }
+
+    public static Properties loadDbProps() {
         Path configPath = Path.of("config/ansanpack_db.properties");
         Properties props = new Properties();
 
@@ -64,9 +78,8 @@ public class UpgradeConfigManager {
                     writer.write("db.database=minecraft\n");
                     writer.write("db.user=root\n");
                     writer.write("db.password=your_password\n");
-                    writer.flush();
                 }
-                System.out.println("[AnsanPack] MySQL 설정파일이 없어 새로 생성했습니다: " + configPath);
+                System.out.println("[AnsanPack] MySQL 설정파일 생성됨: " + configPath);
             } catch (IOException e) {
                 throw new RuntimeException("MySQL 설정파일 생성 실패: " + configPath, e);
             }
@@ -75,44 +88,10 @@ public class UpgradeConfigManager {
         try (Reader reader = Files.newBufferedReader(configPath)) {
             props.load(reader);
         } catch (IOException e) {
-            throw new RuntimeException("MySQL 설정 파일 로딩 실패: " + configPath, e);
+            throw new RuntimeException("MySQL 설정파일 읽기 실패: " + configPath, e);
         }
 
-        String host = props.getProperty("db.host");
-        String port = props.getProperty("db.port");
-        String database = props.getProperty("db.database");
-        String user = props.getProperty("db.user");
-        String password = props.getProperty("db.password");
-
-        String url = "jdbc:mysql://" + host + ":" + port + "/" + database + "?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true";
-
-        try (Connection conn = DriverManager.getConnection(url, user, password)) {
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM upgrades");
-
-            while (rs.next()) {
-                ResourceLocation itemId = new ResourceLocation(rs.getString("item_id"));
-                int maxLevel = rs.getInt("max_level");
-                double baseChance = rs.getDouble("base_chance");
-                double chanceDecrease = rs.getDouble("chance_decrease");
-
-                Map<String, Double> effects = new HashMap<>();
-                try (PreparedStatement effectStmt = conn.prepareStatement("SELECT effect_key, effect_value FROM upgrade_effects WHERE item_id = ?")) {
-                    effectStmt.setString(1, itemId.toString());
-                    ResultSet ers = effectStmt.executeQuery();
-                    while (ers.next()) {
-                        effects.put(ers.getString("effect_key"), ers.getDouble("effect_value"));
-                    }
-                }
-
-                UpgradeConfig config = new UpgradeConfig(itemId, maxLevel, baseChance, chanceDecrease, effects);
-                ITEM_CONFIGS.put(itemId, config);
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new RuntimeException("MySQL 접속 실패: " + url +"계정및패스워드:" + user + " | " + password+ "\n원인: " + e.getMessage(), e);
-        }
+        return props;
     }
 
     public static double getEffectValue(ResourceLocation itemId, String effectKey) {

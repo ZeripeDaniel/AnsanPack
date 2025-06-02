@@ -24,6 +24,7 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
     private double currentChance = 0.0;
     private double wtfchange ;
     private int currentLevel = 0;
+    private static double syncedChance = 0.0; // 서버에서 받은 확률 (신뢰값)
 
     public UpgradeScreen(UpgradeContainer container, Inventory playerInventory, Component title) {
         super(container, playerInventory, title);
@@ -48,8 +49,7 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
         ItemStack stack = menu.getUpgradeSlot().getItem();
         UpgradeConfigManager.getConfig(stack.getItem()).ifPresent(config -> {
             this.currentLevel = WeaponUpgradeSystem.getCurrentLevel(stack);
-            this.currentChance = WeaponUpgradeSystem.getUpgradeChance(stack);  // ← 확률 메서드 사용
-            wtfchange = WeaponUpgradeSystem.getUpgradeChance(stack);  // ← 확률 메서드 사용
+            //this.currentChance = WeaponUpgradeSystem.getUpgradeChance(stack);  // ← 확률 메서드 사용
         });
     }
 
@@ -96,7 +96,7 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
         super.renderLabels(guiGraphics, mouseX, mouseY);
         refreshUpgradeInfo();
 
-        String chanceText = String.format("성공률: %.1f%%", wtfchange * 100);
+        String chanceText = String.format("성공률: %.1f%%", syncedChance * 100);
         guiGraphics.drawString(font, chanceText, 8, 60, 0xFFFFFF);
 
         guiGraphics.drawString(
@@ -172,4 +172,11 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
             );
         }
     }
+
+    public static void setChance(String itemId, int level, double chance) {
+        syncedChance = chance;
+        AnsanPack.LOGGER.debug("[DEBUG] GUI 확률 적용됨 → 아이템: {}, 레벨: {}, 확률: {}", itemId, level, chance);
+    }
+
+
 }

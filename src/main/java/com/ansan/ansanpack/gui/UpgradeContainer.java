@@ -1,3 +1,5 @@
+// 변경된 부분 주석 처리함
+
 package com.ansan.ansanpack.gui;
 
 import com.ansan.ansanpack.AnsanPack;
@@ -13,10 +15,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkDirection;
 import com.ansan.ansanpack.config.UpgradeConfigManager;
+
 import java.util.Optional;
 
 public class UpgradeContainer extends AbstractContainerMenu {
-    private final UpgradeItemHandler itemHandler = new UpgradeItemHandler();
+
+    private final UpgradeItemHandler itemHandler; // 🔧 생성자에서 초기화
     public final Slot upgradeSlot;
     public final Slot reinforceStoneSlot;
 
@@ -27,17 +31,19 @@ public class UpgradeContainer extends AbstractContainerMenu {
     public UpgradeContainer(int windowId, Inventory playerInventory) {
         super(AnsanPack.UPGRADE_CONTAINER.get(), windowId);
 
+        // 🔧 여기서 플레이어 객체를 UpgradeItemHandler에 전달
+        this.itemHandler = new UpgradeItemHandler(playerInventory.player);
+
         // 강화 슬롯
         this.upgradeSlot = this.addSlot(new Slot(itemHandler, 0, 55, 40) {
-            @Override
-            public boolean mayPlace(ItemStack stack) {
+            @Override public boolean mayPlace(ItemStack stack) {
                 return stack.isDamageableItem();
             }
         });
-        //강화석 슬롯
+
+        // 강화석 슬롯
         this.reinforceStoneSlot = this.addSlot(new Slot(itemHandler, 1, 104, 40) {
-            @Override
-            public boolean mayPlace(ItemStack stack) {
+            @Override public boolean mayPlace(ItemStack stack) {
                 return stack.getItem() == ModItems.REINFORCE_STONE.get();
             }
         });
@@ -75,19 +81,13 @@ public class UpgradeContainer extends AbstractContainerMenu {
                 return ItemStack.EMPTY;
             }
 
-            if (itemstack1.isEmpty()) {
-                slot.set(ItemStack.EMPTY);
-            } else {
-                slot.setChanged();
-            }
+            if (itemstack1.isEmpty()) slot.set(ItemStack.EMPTY);
+            else slot.setChanged();
 
-            if (itemstack1.getCount() == itemstack.getCount()) {
-                return ItemStack.EMPTY;
-            }
+            if (itemstack1.getCount() == itemstack.getCount()) return ItemStack.EMPTY;
 
             slot.onTake(player, itemstack1);
         }
-
         return itemstack;
     }
 
@@ -96,16 +96,11 @@ public class UpgradeContainer extends AbstractContainerMenu {
         ItemStack stone = this.reinforceStoneSlot.getItem();
 
         if (!weapon.isEmpty() && !stone.isEmpty()) {
-
             Optional<UpgradeConfigManager.UpgradeConfig> config = UpgradeConfigManager.getConfig(weapon.getItem());
-
             if (config.isPresent()) {
                 int currentLevel = WeaponUpgradeSystem.getCurrentLevel(weapon);
 
-                // 최대 레벨 체크 추가
-                if (currentLevel >= config.get().maxLevel) {
-                    return false; // 이미 최대 레벨
-                }
+                if (currentLevel >= config.get().maxLevel) return false;
 
                 boolean result = WeaponUpgradeSystem.tryUpgrade(weapon, stone);
                 AnsanPack.NETWORK.sendTo(
@@ -119,18 +114,12 @@ public class UpgradeContainer extends AbstractContainerMenu {
         return false;
     }
 
-    public Slot getUpgradeSlot() {
-        return this.upgradeSlot;
-    }
-
-    public Slot getReinforceStoneSlot() {
-        return this.reinforceStoneSlot;
-    }
+    public Slot getUpgradeSlot() { return this.upgradeSlot; }
+    public Slot getReinforceStoneSlot() { return this.reinforceStoneSlot; }
 
     @Override
     public void removed(Player player) {
         super.removed(player);
-        // 아이템이 사라지지 않도록 인벤토리로 반환
         for (int i = 0; i < this.slots.size(); i++) {
             Slot slot = this.slots.get(i);
             if (slot.hasItem()) {
