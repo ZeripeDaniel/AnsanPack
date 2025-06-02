@@ -83,7 +83,7 @@ public class AnsanPack {
             ConfigManager.loadConfig();
             RandomBoxConfigManager.loadConfig();
             EntityConfigManager.loadConfig();
-            UpgradeConfigManager.loadConfig();
+            UpgradeConfigManager.loadConfigFromMySQL(); // 🔥 여기 추가
         }
     }
 
@@ -101,11 +101,6 @@ public class AnsanPack {
         // 공통 설정
         // 4. 네트워크 패킷 등록
         int packetId = 0;
-        NETWORK.registerMessage(packetId++,
-                SyncConfigPacket.class,
-                SyncConfigPacket::encode,
-                SyncConfigPacket::decode,
-                SyncConfigPacket::handle);
 
         NETWORK.registerMessage(packetId++,
                 MessageUpgradeRequest.class,
@@ -122,5 +117,4 @@ public class AnsanPack {
     private void clientSetup(final FMLClientSetupEvent event) {
         MenuScreens.register(UPGRADE_CONTAINER.get(), UpgradeScreen::new);
     }
-
 }
