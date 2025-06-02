@@ -134,6 +134,8 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
         int upgradeSlotIndex = menu.upgradeSlot.index;
         int stoneSlotIndex = menu.reinforceStoneSlot.index;
 
+        AnsanPack.LOGGER.debug("Sending upgrade request: {}, {}", upgradeSlotIndex, stoneSlotIndex);
+
         ItemStack weapon = menu.getSlot(upgradeSlotIndex).getItem();
         ItemStack stone = menu.getSlot(stoneSlotIndex).getItem();
 

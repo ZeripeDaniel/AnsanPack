@@ -70,13 +70,13 @@ public class AnsanPack {
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(AnvilEnchantTransferHandler.class);
 
-        MENUS.register(modEventBus);
+        // 3. 강화 시스템 이벤트 리스너 등록
+        MinecraftForge.EVENT_BUS.register(new UpgradeSystemEventHandler());
 
+        MENUS.register(modEventBus);
         modEventBus.addListener(this::commonSetup);
         modEventBus.addListener(this::clientSetup);
 
-        // 3. 강화 시스템 이벤트 리스너 등록
-        MinecraftForge.EVENT_BUS.register(new UpgradeSystemEventHandler());
     }
     private void setup(final FMLCommonSetupEvent event) {
         if (FMLEnvironment.dist.isDedicatedServer()) {
@@ -85,6 +85,7 @@ public class AnsanPack {
             EntityConfigManager.loadConfig();
             UpgradeConfigManager.loadConfigFromMySQL(); // 🔥 여기 추가
         }
+        commonSetup(event);
     }
 
     @SubscribeEvent
@@ -113,6 +114,7 @@ public class AnsanPack {
                 MessageUpgradeResult::encode,
                 MessageUpgradeResult::decode,
                 MessageUpgradeResult::handle);
+
     }
     private void clientSetup(final FMLClientSetupEvent event) {
         MenuScreens.register(UPGRADE_CONTAINER.get(), UpgradeScreen::new);

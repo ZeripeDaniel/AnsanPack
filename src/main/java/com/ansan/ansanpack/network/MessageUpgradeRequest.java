@@ -21,45 +21,47 @@ public class MessageUpgradeRequest {
     }
 
     public static void encode(MessageUpgradeRequest msg, FriendlyByteBuf buffer) {
+        AnsanPack.LOGGER.debug("Encoding upgrade request: {}, {}", msg.upgradeSlotIndex, msg.stoneSlotIndex);
         buffer.writeInt(msg.upgradeSlotIndex);
         buffer.writeInt(msg.stoneSlotIndex);
     }
 
-    public static MessageUpgradeRequest decode(FriendlyByteBuf buffer) {
-        return new MessageUpgradeRequest(buffer.readInt(), buffer.readInt());
+    public static MessageUpgradeRequest decode(FriendlyByteBuf buf) {
+        int idx1 = buf.readInt();
+        int idx2 = buf.readInt();
+        // ▼▼▼ decode 단계에서 buffer 크기 점검 필요할 수 있음 ▼▼▼
+        AnsanPack.LOGGER.debug("Decoding upgrade request: {}, {}", idx1, idx2);
+        if (buf.readableBytes() < 8) throw new IllegalArgumentException("패킷 데이터가 너무 짧습니다!");
+        return new MessageUpgradeRequest(buf.readInt(), buf.readInt());
     }
 
     public static void handle(MessageUpgradeRequest msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
             ServerPlayer player = ctx.get().getSender();
-            if (player != null && player.containerMenu instanceof UpgradeContainer container) {
-                // 슬롯 인덱스로 실제 아이템 가져오기
+            if (player == null || !(player.containerMenu instanceof UpgradeContainer container)) return;
+
+            try {
                 ItemStack weapon = container.getSlot(msg.upgradeSlotIndex).getItem();
                 ItemStack stone = container.getSlot(msg.stoneSlotIndex).getItem();
 
                 if (!weapon.isEmpty() && !stone.isEmpty()) {
                     boolean result = WeaponUpgradeSystem.tryUpgrade(weapon, stone);
 
-                    // 강화석 소모
                     if (result) {
                         stone.shrink(1);
                         container.getSlot(msg.stoneSlotIndex).setChanged();
                     }
 
-                    // 결과 전송
                     AnsanPack.NETWORK.sendTo(
                             new MessageUpgradeResult(result),
                             player.connection.connection,
                             NetworkDirection.PLAY_TO_CLIENT
                     );
                 }
+            } catch (IndexOutOfBoundsException e) {
+                AnsanPack.LOGGER.error("슬롯 인덱스 오류: {}", e.getMessage());
             }
         });
         ctx.get().setPacketHandled(true);
-    }
-
-
-    private static boolean isValidUpgrade(ItemStack weapon, ItemStack stone) {
-        return !weapon.isEmpty() && !stone.isEmpty() && weapon.isDamageableItem();
     }
 }

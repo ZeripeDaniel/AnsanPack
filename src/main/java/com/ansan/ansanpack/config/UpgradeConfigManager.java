@@ -84,7 +84,7 @@ public class UpgradeConfigManager {
         String user = props.getProperty("db.user");
         String password = props.getProperty("db.password");
 
-        String url = "jdbc:mysql://" + host + ":" + port + "/" + database + "?serverTimezone=Asia/Seoul";
+        String url = "jdbc:mysql://" + host + ":" + port + "/" + database + "?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true";
 
         try (Connection conn = DriverManager.getConnection(url, user, password)) {
             Statement stmt = conn.createStatement();
@@ -111,7 +111,7 @@ public class UpgradeConfigManager {
 
         } catch (SQLException e) {
             e.printStackTrace();
-            throw new RuntimeException("MySQL 접속 실패: " + url +"계정및패스워드:" + user + " | " + password , e);
+            throw new RuntimeException("MySQL 접속 실패: " + url +"계정및패스워드:" + user + " | " + password+ "\n원인: " + e.getMessage(), e);
         }
     }
 
