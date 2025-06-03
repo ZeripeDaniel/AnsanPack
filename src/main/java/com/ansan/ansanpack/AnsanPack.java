@@ -85,6 +85,8 @@ public class AnsanPack {
             UpgradeConfigManager.loadConfigFromMySQL();
             UpgradeChanceManager.loadChancesFromMySQL();
             JobCostManager.loadFromMySQL();
+            MobDropManager.loadFromMySQL();
+            AnvilRecipeManager.loadFromDatabase();
         }
     }
 
@@ -102,6 +104,7 @@ public class AnsanPack {
         JobCommand.register(event.getDispatcher());
         MyInfoCommand.register(event.getDispatcher());
         InfoCommand.register(event.getDispatcher());
+        AnvilRecipeRegisterCommand.register(event.getDispatcher());
     }
     private void commonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {

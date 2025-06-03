@@ -87,13 +87,14 @@ public class JobCommand {
             return Command.SINGLE_SUCCESS;
         }
 
-        // puffish_skills 카테고리 해금 명령어 실행
-        String unlockCmd = "puffish_skills categories unlock %s %s"
+        String unlockCmd = "puffish_skills category unlock %s %s"
                 .formatted(player.getName().getString(), category);
+
         int result = source.getServer().getCommands().performPrefixedCommand(
-                source.withSuppressedOutput(),
-                "execute as " + player.getName().getString() + " run " + unlockCmd
+                source.withSuppressedOutput(), // 콘솔 권한
+                unlockCmd
         );
+
         AnsanPack.LOGGER.debug("[전직] puffish_skills 해금 명령 실행 결과값: {}", result);
 
         // 직업 추가
