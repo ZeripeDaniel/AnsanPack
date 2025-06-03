@@ -1,5 +1,6 @@
 package com.ansan.ansanpack.config;
 
+import com.ansan.ansanpack.AnsanPack;
 import net.minecraft.resources.ResourceLocation;
 
 import java.sql.*;
@@ -35,19 +36,28 @@ public class UpgradeChanceManager {
         } catch (SQLException e) {
             throw new RuntimeException("[AnsanPack] 강화 확률 로딩 실패: " + e.getMessage(), e);
         }
+
     }
 
     public static double getSuccessChance(ResourceLocation itemId, int level) {
+        if (!CHANCES.containsKey(itemId.toString())) {
+            AnsanPack.LOGGER.warn("이 아이템은 확률 정보가 없어 강화 불가: {}", itemId);
+            return 0.0;
+        }
+
         Map<Integer, Double> levelMap = CHANCES.get(itemId.toString());
         if (levelMap == null) {
-            System.out.println("[AnsanPack][확률X] itemId 미존재: " + itemId);
+            AnsanPack.LOGGER.warn("[AnsanPack][확률X] itemId 미존재: {}", itemId);
             return 0.0;
         }
+
         if (!levelMap.containsKey(level)) {
-            System.out.println("[AnsanPack][확률X] 해당 레벨 없음: " + level + " for " + itemId);
+            AnsanPack.LOGGER.warn("[AnsanPack][확률X] 해당 레벨 없음: {} for {}", level, itemId);
             return 0.0;
         }
+
         return levelMap.get(level);
     }
+
 
 }

@@ -4,6 +4,7 @@ package com.ansan.ansanpack.gui;
 
 import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.config.UpgradeChanceManager;
+import com.ansan.ansanpack.config.UpgradeConfigManager;
 import com.ansan.ansanpack.item.ModItems;
 import com.ansan.ansanpack.network.MessageUpgradeChanceSync;
 import com.ansan.ansanpack.upgrade.WeaponUpgradeSystem;
@@ -16,6 +17,8 @@ import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Optional;
 
 public class UpgradeItemHandler extends ItemStackHandler implements Container {
 
@@ -62,10 +65,13 @@ public class UpgradeItemHandler extends ItemStackHandler implements Container {
                 int level = WeaponUpgradeSystem.getCurrentLevel(item);
                 double chance = UpgradeChanceManager.getSuccessChance(itemId, level);
 
-                AnsanPack.LOGGER.debug("[DEBUG] 확률 전송: {}, 레벨: {}, 확률: {}", itemId, level, chance);
+                Optional<UpgradeConfigManager.UpgradeConfig> configOpt = UpgradeConfigManager.getConfig(item.getItem());
+                int maxLevel = configOpt.map(c -> c.maxLevel).orElse(0);
+
+                AnsanPack.LOGGER.debug("[DEBUG] 확률 전송: {}, 레벨: {}, 확률: {}, 최대레벨: {}", itemId, level, chance, maxLevel);
 
                 AnsanPack.NETWORK.sendTo(
-                        new MessageUpgradeChanceSync(itemId.toString(), level, chance),
+                        new MessageUpgradeChanceSync(itemId.toString(), level, chance, maxLevel),
                         serverPlayer.connection.connection,
                         NetworkDirection.PLAY_TO_CLIENT
                 );

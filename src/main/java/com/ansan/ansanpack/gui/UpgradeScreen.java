@@ -25,6 +25,7 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
     private double wtfchange ;
     private int currentLevel = 0;
     private static double syncedChance = 0.0; // 서버에서 받은 확률 (신뢰값)
+    private static int syncedMaxLevel = 0;
 
     public UpgradeScreen(UpgradeContainer container, Inventory playerInventory, Component title) {
         super(container, playerInventory, title);
@@ -107,12 +108,9 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
                 true
         );
 
-        ItemStack stack = menu.getUpgradeSlot().getItem();
-        UpgradeConfigManager.getConfig(stack.getItem()).ifPresent(config -> {
-            if (currentLevel >= config.maxLevel) {
+            if (currentLevel >= syncedMaxLevel) {
                 guiGraphics.drawString(font, "MAX", 90, 60, 0xFFD700);
             }
-        });
     }
 
     public void handleUpgradeResult(boolean success) {
@@ -121,7 +119,7 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
         ItemStack weapon = menu.getUpgradeSlot().getItem();
         Optional<UpgradeConfigManager.UpgradeConfig> config = UpgradeConfigManager.getConfig(weapon.getItem());
 
-        if (config.isPresent() && currentLevel >= config.get().maxLevel) {
+        if (config.isPresent() && currentLevel >= syncedMaxLevel) {
             resultText = Component.literal("최대 강화 레벨 도달!").withStyle(ChatFormatting.YELLOW);
         } else {
             resultText = success
@@ -132,23 +130,59 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
         this.init();
     }
 
-    private void tryUpgrade() {
-        int upgradeSlotIndex = menu.upgradeSlot.index;
-        int stoneSlotIndex = menu.reinforceStoneSlot.index;
+//    private void tryUpgrade() {
+//        int upgradeSlotIndex = menu.upgradeSlot.index;
+//        int stoneSlotIndex = menu.reinforceStoneSlot.index;
+//
+//        AnsanPack.LOGGER.debug("Sending upgrade request: {}, {}", upgradeSlotIndex, stoneSlotIndex);
+//
+//        ItemStack weapon = menu.getSlot(upgradeSlotIndex).getItem();
+//        ItemStack stone = menu.getSlot(stoneSlotIndex).getItem();
+//
+//
+//        if (weapon.isEmpty() || stone.isEmpty()) {
+//            resultText = Component.literal("강화할 아이템과 강화석을 넣어주세요!").withStyle(ChatFormatting.RED);
+//            return;
+//        }
+//
+//        // ✅ 여기서 강화 제한 체크
+//        UpgradeConfigManager.getConfig(weapon.getItem()).ifPresent(config -> {
+//            int currentLevel = WeaponUpgradeSystem.getCurrentLevel(weapon);
+//            if (currentLevel >= config.maxLevel) {
+//                resultText = Component.literal("최대 강화 레벨에 도달했습니다.").withStyle(ChatFormatting.YELLOW);
+//                return;
+//            }
+//
+//            // 🔥 강화 시도 패킷 전송
+//            AnsanPack.NETWORK.sendToServer(new MessageUpgradeRequest(upgradeSlotIndex, stoneSlotIndex));
+//            AnsanPack.LOGGER.debug("패킷 전송 시작: 업그레이드 슬롯={}, 강화석 슬롯={}", upgradeSlotIndex, stoneSlotIndex);
+//        });
+//    }
+private void tryUpgrade() {
+    int upgradeSlotIndex = menu.upgradeSlot.index;
+    int stoneSlotIndex = menu.reinforceStoneSlot.index;
 
-        AnsanPack.LOGGER.debug("Sending upgrade request: {}, {}", upgradeSlotIndex, stoneSlotIndex);
+    AnsanPack.LOGGER.debug("Sending upgrade request: {}, {}", upgradeSlotIndex, stoneSlotIndex);
 
-        ItemStack weapon = menu.getSlot(upgradeSlotIndex).getItem();
-        ItemStack stone = menu.getSlot(stoneSlotIndex).getItem();
+    ItemStack weapon = menu.getSlot(upgradeSlotIndex).getItem();
+    ItemStack stone = menu.getSlot(stoneSlotIndex).getItem();
 
-        if (weapon.isEmpty() || stone.isEmpty()) {
-            resultText = Component.literal("강화할 아이템과 강화석을 넣어주세요!").withStyle(ChatFormatting.RED);
-            return;
-        }
-
-        AnsanPack.NETWORK.sendToServer(new MessageUpgradeRequest(upgradeSlotIndex, stoneSlotIndex));
-        AnsanPack.LOGGER.debug("패킷 전송 시작: 업그레이드 슬롯={}, 강화석 슬롯={}", upgradeSlotIndex, stoneSlotIndex);
+    if (weapon.isEmpty() || stone.isEmpty()) {
+        resultText = Component.literal("강화할 아이템과 강화석을 넣어주세요!").withStyle(ChatFormatting.RED);
+        return;
     }
+
+    if (currentLevel >= syncedMaxLevel) {
+        resultText = Component.literal("최대 강화 레벨에 도달했습니다.").withStyle(ChatFormatting.YELLOW);
+        return;
+    }
+
+    AnsanPack.LOGGER.debug("에라이싯팔레벨 {}, {}", currentLevel, syncedMaxLevel);
+    // 🔥 강화 시도 패킷 전송
+    AnsanPack.NETWORK.sendToServer(new MessageUpgradeRequest(upgradeSlotIndex, stoneSlotIndex));
+    AnsanPack.LOGGER.debug("패킷 전송 시작: 업그레이드 슬롯={}, 강화석 슬롯={}", upgradeSlotIndex, stoneSlotIndex);
+}
+
 
     public static class UpgradeButton extends Button {
         private static final ResourceLocation BUTTON_TEXTURE =
@@ -173,9 +207,10 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
         }
     }
 
-    public static void setChance(String itemId, int level, double chance) {
+    public static void setChance(String itemId, int level, double chance, int maxLevel) {
         syncedChance = chance;
-        AnsanPack.LOGGER.debug("[DEBUG] GUI 확률 적용됨 → 아이템: {}, 레벨: {}, 확률: {}", itemId, level, chance);
+        syncedMaxLevel = maxLevel;
+        AnsanPack.LOGGER.debug("[DEBUG] GUI 확률 적용됨 → 아이템: {}, 레벨: {}, 확률: {}, 최대레벨: {}", itemId, level, chance, maxLevel);
     }
 
 

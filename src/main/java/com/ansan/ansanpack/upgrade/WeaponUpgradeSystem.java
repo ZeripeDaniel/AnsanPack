@@ -64,26 +64,34 @@ public class WeaponUpgradeSystem {
         int currentLevel = getCurrentLevel(weapon);
         ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(weapon.getItem());
 
+        // 🔐 max_level 체크
+        Optional<UpgradeConfigManager.UpgradeConfig> configOpt = UpgradeConfigManager.getConfig(weapon.getItem());
+        if (configOpt.isEmpty()) return false;
+
+        UpgradeConfigManager.UpgradeConfig config = configOpt.get();
+
+        if (currentLevel >= config.maxLevel) {
+            AnsanPack.LOGGER.warn("강화 불가: {}는 최대 강화 레벨 {}에 도달함", itemId, config.maxLevel);
+            return false;
+        }
+
         double successChance = UpgradeChanceManager.getSuccessChance(itemId, currentLevel);
         boolean success = Math.random() < successChance;
 
         AnsanPack.LOGGER.info("강화 시도 - 확률: {}% → {}", successChance * 100, success ? "성공" : "실패");
 
+
         if (success) {
-            Optional<UpgradeConfigManager.UpgradeConfig> configOpt = UpgradeConfigManager.getConfig(weapon.getItem());
-            if (configOpt.isPresent()) {
-                UpgradeConfigManager.UpgradeConfig config = configOpt.get();
-                int newLevel = currentLevel + 1;
+            int newLevel = currentLevel + 1;
 
-                CompoundTag tag = weapon.getOrCreateTag();
-                tag.putInt(UPGRADE_TAG, newLevel);
-                applyEffects(tag, config, newLevel);
+            CompoundTag tag = weapon.getOrCreateTag();
+            tag.putInt(UPGRADE_TAG, newLevel);
+            applyEffects(tag, config, newLevel);
 
-                weapon.setTag(tag);
-                weapon.setCount(weapon.getCount());
+            weapon.setTag(tag);
+            weapon.setCount(weapon.getCount());
 
-                AnsanPack.LOGGER.info("강화 성공 → 레벨: {}", newLevel);
-            }
+            AnsanPack.LOGGER.info("강화 성공 → 레벨: {}", newLevel);
         }
 
         return success;

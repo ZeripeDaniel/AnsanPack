@@ -82,8 +82,9 @@ public class AnsanPack {
             ConfigManager.loadConfig();
             RandomBoxConfigManager.loadConfig();
             EntityConfigManager.loadConfig();
-            UpgradeConfigManager.loadConfigFromMySQL(); // 🔥 여기 추가
-            UpgradeChanceManager.loadChancesFromMySQL(); // 강화 확률도 MySQL에서 불러오기
+            UpgradeConfigManager.loadConfigFromMySQL();
+            UpgradeChanceManager.loadChancesFromMySQL();
+            JobCostManager.loadFromMySQL();
         }
     }
 
@@ -95,7 +96,12 @@ public class AnsanPack {
         GiveMoneyCommand.register(event.getDispatcher());
         TransferCommand.register(event.getDispatcher());
         PetCommand.register(event.getDispatcher());
-        UpgradeCommand.register(event.getDispatcher()); // 새로운 명령어 등록
+        UpgradeCommand.register(event.getDispatcher());
+        QueryRegisterCommand.register(event.getDispatcher());
+        QueryReloadCommand.register(event.getDispatcher());
+        JobCommand.register(event.getDispatcher());
+        MyInfoCommand.register(event.getDispatcher());
+        InfoCommand.register(event.getDispatcher());
     }
     private void commonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
