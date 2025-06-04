@@ -95,7 +95,7 @@ public class JobCommand {
                 unlockCmd
         );
 
-        AnsanPack.LOGGER.debug("[전직] puffish_skills 해금 명령 실행 결과값: {}", result);
+        //AnsanPack.LOGGER.debug("[전직] puffish_skills 해금 명령 실행 결과값: {}", result);
 
         // 직업 추가
         addJob(player, job);

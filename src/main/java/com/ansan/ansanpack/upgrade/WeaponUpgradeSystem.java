@@ -3,6 +3,7 @@ package com.ansan.ansanpack.upgrade;
 import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.config.UpgradeChanceManager;
 import com.ansan.ansanpack.config.UpgradeConfigManager;
+import com.ansan.ansanpack.events.MissionEventDispatcher;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;

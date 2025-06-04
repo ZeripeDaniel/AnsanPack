@@ -105,6 +105,7 @@ public class AnsanPack {
         MyInfoCommand.register(event.getDispatcher());
         InfoCommand.register(event.getDispatcher());
         AnvilRecipeRegisterCommand.register(event.getDispatcher());
+        MissionCommand.register(event.getDispatcher());
     }
     private void commonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {

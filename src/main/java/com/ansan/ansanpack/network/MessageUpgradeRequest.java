@@ -1,6 +1,7 @@
 package com.ansan.ansanpack.network;
 
 import com.ansan.ansanpack.AnsanPack;
+import com.ansan.ansanpack.events.MissionEventDispatcher;
 import com.ansan.ansanpack.gui.UpgradeContainer;
 import com.ansan.ansanpack.upgrade.WeaponUpgradeSystem;
 import net.minecraft.network.FriendlyByteBuf;
@@ -50,6 +51,7 @@ public class MessageUpgradeRequest {
                 if (!weapon.isEmpty() && !stone.isEmpty()) {
                     boolean result = WeaponUpgradeSystem.tryUpgrade(weapon, stone);
 
+                    MissionEventDispatcher.onUpgradeAttempt(player, result);
                     stone.shrink(1); // 성공/실패 관계없이 소모
                     container.getSlot(msg.stoneSlotIndex).setChanged();
 

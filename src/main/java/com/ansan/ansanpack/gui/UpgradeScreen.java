@@ -148,7 +148,7 @@ private void tryUpgrade() {
         return;
     }
 
-    AnsanPack.LOGGER.debug("에라이싯팔레벨 {}, {}", currentLevel, syncedMaxLevel);
+    //AnsanPack.LOGGER.debug("에라이싯팔레벨 {}, {}", currentLevel, syncedMaxLevel);
     // 🔥 강화 시도 패킷 전송
     AnsanPack.NETWORK.sendToServer(new MessageUpgradeRequest(upgradeSlotIndex, stoneSlotIndex));
     AnsanPack.LOGGER.debug("패킷 전송 시작: 업그레이드 슬롯={}, 강화석 슬롯={}", upgradeSlotIndex, stoneSlotIndex);
