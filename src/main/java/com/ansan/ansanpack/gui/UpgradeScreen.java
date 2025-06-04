@@ -129,35 +129,6 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
 
         this.init();
     }
-
-//    private void tryUpgrade() {
-//        int upgradeSlotIndex = menu.upgradeSlot.index;
-//        int stoneSlotIndex = menu.reinforceStoneSlot.index;
-//
-//        AnsanPack.LOGGER.debug("Sending upgrade request: {}, {}", upgradeSlotIndex, stoneSlotIndex);
-//
-//        ItemStack weapon = menu.getSlot(upgradeSlotIndex).getItem();
-//        ItemStack stone = menu.getSlot(stoneSlotIndex).getItem();
-//
-//
-//        if (weapon.isEmpty() || stone.isEmpty()) {
-//            resultText = Component.literal("강화할 아이템과 강화석을 넣어주세요!").withStyle(ChatFormatting.RED);
-//            return;
-//        }
-//
-//        // ✅ 여기서 강화 제한 체크
-//        UpgradeConfigManager.getConfig(weapon.getItem()).ifPresent(config -> {
-//            int currentLevel = WeaponUpgradeSystem.getCurrentLevel(weapon);
-//            if (currentLevel >= config.maxLevel) {
-//                resultText = Component.literal("최대 강화 레벨에 도달했습니다.").withStyle(ChatFormatting.YELLOW);
-//                return;
-//            }
-//
-//            // 🔥 강화 시도 패킷 전송
-//            AnsanPack.NETWORK.sendToServer(new MessageUpgradeRequest(upgradeSlotIndex, stoneSlotIndex));
-//            AnsanPack.LOGGER.debug("패킷 전송 시작: 업그레이드 슬롯={}, 강화석 슬롯={}", upgradeSlotIndex, stoneSlotIndex);
-//        });
-//    }
 private void tryUpgrade() {
     int upgradeSlotIndex = menu.upgradeSlot.index;
     int stoneSlotIndex = menu.reinforceStoneSlot.index;

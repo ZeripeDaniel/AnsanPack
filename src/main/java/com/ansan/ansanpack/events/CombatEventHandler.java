@@ -26,14 +26,14 @@ public class CombatEventHandler {
                 float finalDamage = event.getAmount() + (float) damageBonus;
                 event.setAmount(finalDamage);
 
-                AnsanPack.LOGGER.info("레벨: {}, 보너스: {}", level, damageBonus);
+                //AnsanPack.LOGGER.info("레벨: {}, 보너스: {}", level, damageBonus);
                 // ▼▼▼ 로깅 추가 ▼▼▼
-                AnsanPack.LOGGER.info("[전투] {}의 {} 강화 데미지 적용: {} → {}",
-                        player.getName().getString(),
-                        weapon.getDisplayName().getString(),
-                        event.getAmount(),
-                        finalDamage
-                );
+//                AnsanPack.LOGGER.info("[전투] {}의 {} 강화 데미지 적용: {} → {}",
+//                        player.getName().getString(),
+//                        weapon.getDisplayName().getString(),
+//                        event.getAmount(),
+//                        finalDamage
+//                );
             }
         });
     }

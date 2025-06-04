@@ -127,6 +127,27 @@ public class AnsanPack {
                     MessageUpgradeChanceSync::encode,
                     MessageUpgradeChanceSync::decode,
                     MessageUpgradeChanceSync::handle);
+
+            AnsanPack.NETWORK.registerMessage(packetId++,
+                    MessageOpenMissionUI.class,
+                    MessageOpenMissionUI::encode,
+                    MessageOpenMissionUI::decode,
+                    MessageOpenMissionUI::handle
+            );
+
+            AnsanPack.NETWORK.registerMessage(packetId++,
+                    MessageClaimReward.class,
+                    MessageClaimReward::encode,
+                    MessageClaimReward::decode,
+                    MessageClaimReward::handle
+            );
+
+            AnsanPack.NETWORK.registerMessage(packetId++,
+                    MessageRewardResult.class,
+                    MessageRewardResult::encode,
+                    MessageRewardResult::decode,
+                    MessageRewardResult::handle
+            );
         });
     }
     private void clientSetup(final FMLClientSetupEvent event) {
