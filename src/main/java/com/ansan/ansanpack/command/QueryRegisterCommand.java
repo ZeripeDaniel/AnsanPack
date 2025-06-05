@@ -51,16 +51,30 @@ public class QueryRegisterCommand {
         int maxLevel = IntegerArgumentType.getInteger(context, "max_level");
 
         String effectKey = switch (type) {
-            case "weapon" -> "damage_per_level";
+            // 무기
+            case "attack" -> "damage_per_level";
+            case "atspeed" -> "attack_spd_level";
+            case "knockback" -> "knockback_level";
+
+            // 방어구
             case "helmet" -> "helmet_armor";
             case "chest" -> "chest_armor";
             case "leggings" -> "leggings_armor";
             case "boots" -> "boots_armor";
+
+            // 공통/기타
+            case "health" -> "health_bonus";
+            case "kbres" -> "resist_knockback";
+            case "tough" -> "toughness_bonus";
+            case "speed" -> "move_speed_bonus";
+            case "luck" -> "luck_bonus";
+
             default -> {
-                source.sendFailure(Component.literal("알 수 없는 타입입니다: " + type));
+                source.sendFailure(Component.literal("❌ 알 수 없는 타입입니다: " + type));
                 yield null;
             }
         };
+
         if (effectKey == null) return Command.SINGLE_SUCCESS;
 
         Properties props = UpgradeConfigManager.loadDbProps();
@@ -84,10 +98,14 @@ public class QueryRegisterCommand {
             }
 
             // upgrade_chance 테이블에 레벨별 확률 삽입
-            float[] chances = new float[] {
-                    0.7f, 0.6f, 0.55f, 0.5f, 0.45f, 0.4f, 0.35f, 0.3f, 0.25f, 0.2f,
-                    0.15f, 0.11f, 0.08f, 0.05f, 0.03f, 0.0f
-            };
+            //구식버전
+//            float[] chances = new float[] {
+//                    0.7f, 0.6f, 0.55f, 0.5f, 0.45f, 0.4f, 0.35f, 0.3f, 0.25f, 0.2f,
+//                    0.15f, 0.11f, 0.08f, 0.05f, 0.03f, 0.0f
+//            };
+            //신식버전 자동계산.
+            float[] chances = generateChances(maxLevel);
+
             try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO upgrade_chances (item_id, level, success_chance) VALUES (?, ?, ?)")) {
                 for (int i = 0; i <= maxLevel; i++) {
                     float chance = i < chances.length ? chances[i] : chances[chances.length - 1];
@@ -109,4 +127,30 @@ public class QueryRegisterCommand {
         source.sendSuccess(() -> Component.literal("'" + itemIdStr + "' 아이템이 데이터베이스에 등록되었습니다."), true);
         return Command.SINGLE_SUCCESS;
     }
+    private static float[] generateChances(int maxLevel) {
+        if (maxLevel <= 15) {
+            float[] chances = new float[maxLevel + 1];
+            for (int i = 0; i <= maxLevel; i++) {
+                float chance = 0.7f * (1.0f - (float)i / maxLevel);
+                chances[i] = Math.max(0.0f, Math.round(chance * 100f) / 100f);
+            }
+            return chances;
+        } else {
+            float[] base = new float[] {
+                    0.7f, 0.6f, 0.55f, 0.5f, 0.45f, 0.4f,
+                    0.35f, 0.3f, 0.25f, 0.2f,
+                    0.15f, 0.11f, 0.08f, 0.05f, 0.03f, 0.0f
+            };
+            float[] chances = new float[maxLevel + 1];
+            System.arraycopy(base, 0, chances, 0, base.length);
+
+            int extraLevels = maxLevel - 15;
+            for (int i = 16; i <= maxLevel; i++) {
+                float chance = 0.03f * (1.0f - (float)(i - 15) / (extraLevels));
+                chances[i] = Math.max(0.0f, Math.round(chance * 100f) / 100f);
+            }
+            return chances;
+        }
+    }
+
 }

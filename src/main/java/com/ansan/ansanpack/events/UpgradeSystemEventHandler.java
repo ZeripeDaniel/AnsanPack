@@ -18,13 +18,22 @@ import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = AnsanPack.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class UpgradeSystemEventHandler {
-    private static final UUID UPGRADE_DAMAGE_UUID = UUID.fromString("a5a6a7a8-1234-5678-9abc-def012345678");
-    private static final UUID UPGRADE_HELMET_UUID = UUID.fromString("a5a6a7a8-1234-5678-9abc-def012345678");
-    private static final UUID UPGRADE_CHEST_UUID = UUID.fromString("b5b6b7b8-2345-6789-abcd-ef0123456789");
-    private static final UUID UPGRADE_LEGGINGS_UUID = UUID.fromString("c5c6c7c8-3456-7890-abcd-0123456789ab");
-    private static final UUID UPGRADE_BOOTS_UUID = UUID.fromString("d5d6d7d8-4567-8901-b4dc-234567890123");
+    // UUID는 고유해야 하므로 모든 속성 별로 다르게 생성
+    private static final UUID UPGRADE_DAMAGE_UUID = UUID.fromString("11111111-aaaa-bbbb-cccc-111111111111");
+    private static final UUID UPGRADE_ATSPD_UUID = UUID.fromString("22222222-aaaa-bbbb-cccc-222222222222");
 
-    private static final UUID UPGRADE_ATSPD_UUID = UUID.fromString("c5c6c7c8-3456-7890-abcd-0123456789ab");
+    private static final UUID UPGRADE_HELMET_UUID = UUID.fromString("33333333-aaaa-bbbb-cccc-333333333333");
+    private static final UUID UPGRADE_CHEST_UUID = UUID.fromString("44444444-aaaa-bbbb-cccc-444444444444");
+    private static final UUID UPGRADE_LEGGINGS_UUID = UUID.fromString("55555555-aaaa-bbbb-cccc-555555555555");
+    private static final UUID UPGRADE_BOOTS_UUID = UUID.fromString("66666666-aaaa-bbbb-cccc-666666666666");
+
+    private static final UUID UPGRADE_HEALTH_UUID = UUID.fromString("77777777-aaaa-bbbb-cccc-777777777777");
+    private static final UUID UPGRADE_KBRES_UUID = UUID.fromString("88888888-aaaa-bbbb-cccc-888888888888");
+    private static final UUID UPGRADE_TOUGH_UUID = UUID.fromString("99999999-aaaa-bbbb-cccc-999999999999");
+    private static final UUID UPGRADE_SPEED_UUID = UUID.fromString("aaaaaaaa-aaaa-bbbb-cccc-aaaaaaaaaaaa");
+    private static final UUID UPGRADE_LUCK_UUID = UUID.fromString("bbbbbbbb-aaaa-bbbb-cccc-bbbbbbbbbbbb");
+    private static final UUID UPGRADE_KNOCKBACK_UUID    = UUID.fromString("cccccccc-aaaa-bbbb-cccc-cccccccccccc");
+
 
     @SubscribeEvent
     public static void onItemAttribute(ItemAttributeModifierEvent event) {
@@ -33,86 +42,79 @@ public class UpgradeSystemEventHandler {
             int level = WeaponUpgradeSystem.getCurrentLevel(stack);
             if (level > 0) {
                 config.effects.forEach((effect, value) -> {
-                    applyEffect(
-                            event,
-                            stack,
-                            effect,
-                            value,
-                            level,
-                            event.getSlotType() // 슬롯 정보 전달
-                    );
+                    applyEffect(event, stack, effect, value, level, event.getSlotType());
                 });
             }
         });
     }
-    private static void applyEffect(ItemAttributeModifierEvent event, ItemStack stack, String effect, double bonus, int level, EquipmentSlot slot) {
-        double value = Math.round(bonus * level * 100) / 100.0; // 소수점 2자리 제한
 
-        // ▼▼▼ 방어구 효과 처리 ▼▼▼
-        if (stack.getItem() instanceof ArmorItem armor) {
-            ArmorItem.Type armorType = armor.getType();
+    private static void applyEffect(ItemAttributeModifierEvent event, ItemStack stack, String effect, double bonus, int level, EquipmentSlot slot) {
+        double value = Math.round(bonus * level * 100) / 100.0;
+
+        boolean isArmor = stack.getItem() instanceof ArmorItem armor;
+        boolean isMainOrOffHand = slot == EquipmentSlot.MAINHAND || slot == EquipmentSlot.OFFHAND;
+
+        // 방어구 전용 효과
+        if (isArmor) {
+            ArmorItem.Type type = ((ArmorItem) stack.getItem()).getType();
             switch (effect) {
                 case "helmet_armor" -> {
-                    if (armorType == ArmorItem.Type.HELMET && slot == EquipmentSlot.HEAD) {
+                    if (type == ArmorItem.Type.HELMET && slot == EquipmentSlot.HEAD)
                         addModifier(event, Attributes.ARMOR, UPGRADE_HELMET_UUID, "헬멧 방어력 강화", value);
-                    }
                 }
                 case "chest_armor" -> {
-                    if (armorType == ArmorItem.Type.CHESTPLATE && slot == EquipmentSlot.CHEST) {
+                    if (type == ArmorItem.Type.CHESTPLATE && slot == EquipmentSlot.CHEST)
                         addModifier(event, Attributes.ARMOR, UPGRADE_CHEST_UUID, "흉갑 방어력 강화", value);
-                    }
                 }
                 case "leggings_armor" -> {
-                    if (armorType == ArmorItem.Type.LEGGINGS && slot == EquipmentSlot.LEGS) {
+                    if (type == ArmorItem.Type.LEGGINGS && slot == EquipmentSlot.LEGS)
                         addModifier(event, Attributes.ARMOR, UPGRADE_LEGGINGS_UUID, "레깅스 방어력 강화", value);
-                    }
                 }
                 case "boots_armor" -> {
-                    if (armorType == ArmorItem.Type.BOOTS && slot == EquipmentSlot.FEET) {
+                    if (type == ArmorItem.Type.BOOTS && slot == EquipmentSlot.FEET)
                         addModifier(event, Attributes.ARMOR, UPGRADE_BOOTS_UUID, "부츠 방어력 강화", value);
-                    }
                 }
             }
         }
 
-        // ▼▼▼ 무기 효과 처리 ▼▼▼
-        else if (stack.getItem() instanceof SwordItem) {
-            if ((slot == EquipmentSlot.MAINHAND || slot == EquipmentSlot.OFFHAND)) {
-                switch (effect) {
-                    case "damage_per_level" ->
-                            addModifier(event, Attributes.ATTACK_DAMAGE, UPGRADE_DAMAGE_UUID, "무기 공격력 강화", value);
-                    case "attack_spd_level" ->
-                            addModifier(event, Attributes.ATTACK_SPEED, UPGRADE_ATSPD_UUID, "공격 속도 강화", value);
-                }
+        // 무기 전용 효과
+        if (isMainOrOffHand) {
+            switch (effect) {
+                case "damage_per_level" ->
+                        addModifier(event, Attributes.ATTACK_DAMAGE, UPGRADE_DAMAGE_UUID, "무기 공격력 강화", value);
+                case "attack_spd_level" ->
+                        addModifier(event, Attributes.ATTACK_SPEED, UPGRADE_ATSPD_UUID, "공격 속도 강화", value);
+                case "knockback_level" ->
+                        addModifier(event, Attributes.ATTACK_KNOCKBACK, UPGRADE_KNOCKBACK_UUID, "공격시 넉백 강화", value);
             }
         }
 
-        // ▼▼▼ 디버깅 로그 ▼▼▼
-        AnsanPack.LOGGER.debug("[효과 적용] {}: {}+{} (슬롯: {})",
-                stack.getDisplayName().getString(),
-                effect,
-                value,
-                slot.getName()
-        );
-    }
-
-
-        private static void addModifier(ItemAttributeModifierEvent event, net.minecraft.world.entity.ai.attributes.Attribute attribute, UUID uuid, String name, double amount) {
-            event.addModifier(
-                    attribute,
-                    new AttributeModifier(
-                            uuid,
-                            name,
-                            amount,
-                            AttributeModifier.Operation.ADDITION
-                    )
-            );
+        // 방어구/무기 공통 효과
+        switch (effect) {
+            case "health_bonus" ->
+                    addModifier(event, Attributes.MAX_HEALTH, UPGRADE_HEALTH_UUID, "체력 증가", value);
+            case "resist_knockback" ->
+                    addModifier(event, Attributes.KNOCKBACK_RESISTANCE, UPGRADE_KBRES_UUID, "넉백 저항", value);
+            case "toughness_bonus" ->
+                    addModifier(event, Attributes.ARMOR_TOUGHNESS, UPGRADE_TOUGH_UUID, "방어 강인함", value);
+            case "move_speed_bonus" ->
+                    addModifier(event, Attributes.MOVEMENT_SPEED, UPGRADE_SPEED_UUID, "이동 속도 증가", value);
+            case "luck_bonus" ->
+                    addModifier(event, Attributes.LUCK, UPGRADE_LUCK_UUID, "행운", value);
         }
-        @SubscribeEvent
-        public static void onItemTooltip(ItemTooltipEvent event) {
-        if (event.getEntity() == null) return; // 서버 측 실행 방지
-        ItemStack stack = event.getItemStack();
-        WeaponUpgradeSystem.addUpgradeTooltip(stack, event.getToolTip());
+
+        AnsanPack.LOGGER.debug("[효과 적용] {}: {} +{} (슬롯: {})",
+                stack.getDisplayName().getString(), effect, value, slot.getName());
     }
 
+
+    private static void addModifier(ItemAttributeModifierEvent event, net.minecraft.world.entity.ai.attributes.Attribute attribute, UUID uuid, String name, double amount) {
+        event.addModifier(attribute, new AttributeModifier(uuid, name, amount, AttributeModifier.Operation.ADDITION));
+    }
+
+    @SubscribeEvent
+    public static void onItemTooltip(ItemTooltipEvent event) {
+        if (event.getEntity() == null) return;
+        WeaponUpgradeSystem.addUpgradeTooltip(event.getItemStack(), event.getToolTip());
+    }
 }

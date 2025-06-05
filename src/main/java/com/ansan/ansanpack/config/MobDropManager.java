@@ -8,8 +8,7 @@ import java.util.*;
 
 public class MobDropManager {
 
-    // 🔧 entityType 추가: null이면 "모든 적대 몹 공용"
-    public static record DropEntry(ResourceLocation itemId, double chance, int count, ResourceLocation entityType) {}
+    public static record DropEntry(ResourceLocation itemId, double chance, int count, ResourceLocation entityId) {}
 
     private static final List<DropEntry> drops = new ArrayList<>();
 
@@ -23,22 +22,23 @@ public class MobDropManager {
                     "?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true";
 
             try (Connection conn = DriverManager.getConnection(url, props.getProperty("db.user"), props.getProperty("db.password"))) {
-                // 🔄 entity_type 포함해서 쿼리
-                PreparedStatement stmt = conn.prepareStatement("SELECT item_id, chance, count, entity_type FROM mob_drops WHERE enabled = TRUE");
+                PreparedStatement stmt = conn.prepareStatement(
+                        "SELECT item_id, chance, count, entity_id FROM mob_drops WHERE enabled = TRUE");
                 ResultSet rs = stmt.executeQuery();
 
                 while (rs.next()) {
                     String itemIdStr = rs.getString("item_id");
                     double chance = rs.getDouble("chance");
                     int count = rs.getInt("count");
-                    String entityTypeStr = rs.getString("entity_type");
+                    String entityIdStr = rs.getString("entity_id");
 
                     ResourceLocation itemId = new ResourceLocation(itemIdStr);
-                    ResourceLocation entityType = (entityTypeStr != null && !entityTypeStr.isBlank())
-                            ? new ResourceLocation(entityTypeStr)
-                            : null;
+                    ResourceLocation entityId = null;
+                    if (entityIdStr != null && !entityIdStr.isBlank()) {
+                        entityId = new ResourceLocation(entityIdStr);
+                    }
 
-                    drops.add(new DropEntry(itemId, chance, count, entityType));
+                    drops.add(new DropEntry(itemId, chance, count, entityId));
                 }
 
                 AnsanPack.LOGGER.info("[AnsanPack] 몹 드랍 아이템 {}개 로딩됨", drops.size());
@@ -50,5 +50,17 @@ public class MobDropManager {
 
     public static List<DropEntry> getDrops() {
         return drops;
+    }
+
+    // 🔎 해당 몬스터에게 드랍 가능한 드롭만 필터링
+    public static List<DropEntry> getDropsForEntity(ResourceLocation entityType) {
+        List<DropEntry> result = new ArrayList<>();
+        for (DropEntry entry : drops) {
+            // entityId가 null 또는 "" 이면 전체 몬스터에게 적용
+            if (entry.entityId == null || entry.entityId.equals(entityType)) {
+                result.add(entry);
+            }
+        }
+        return result;
     }
 }
