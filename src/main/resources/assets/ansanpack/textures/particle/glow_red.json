@@ -1,0 +1,8 @@
+{
+  "textures": ["ansanpack:particle/glow_red"],
+  "size": 1,
+  "lifespan": 40,
+  "alpha": {
+    "curve": "fade_out"
+  }
+}

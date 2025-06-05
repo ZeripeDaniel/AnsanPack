@@ -1,5 +1,6 @@
 package com.ansan.ansanpack;
 
+import com.ansan.ansanpack.client.ModParticles;
 import com.ansan.ansanpack.command.*;
 import com.ansan.ansanpack.common.events.AnvilEnchantTransferHandler;
 import com.ansan.ansanpack.config.*;
@@ -17,9 +18,7 @@ import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -30,6 +29,8 @@ import net.minecraftforge.registries.RegistryObject;
 import com.ansan.ansanpack.gui.UpgradeScreen;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import java.awt.*;
 
 
 @Mod(AnsanPack.MODID)
@@ -62,6 +63,7 @@ public class AnsanPack {
         ModItems.ITEMS.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
         MENUS.register(modEventBus);
+        ModParticles.PARTICLES.register(modEventBus);
 
         // Register CoinInteractionHandler to the Forge event bus
         MinecraftForge.EVENT_BUS.register(new CoinInteractionHandler());
