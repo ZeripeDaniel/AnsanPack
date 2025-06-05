@@ -19,7 +19,7 @@ public class PlayerMissionDAO {
                             rs.getInt("progress"),
                             rs.getBoolean("completed"),
                             rs.getBoolean("rewarded"), // ✅ 통일
-                            rs.getTimestamp("assigned_time") // ✅ assignedAt으로 맵핑
+                            rs.getTimestamp("assigned_at") // ✅ assignedAt으로 맵핑
                     ));
                 }
             }
@@ -29,13 +29,13 @@ public class PlayerMissionDAO {
 
     public static void saveOrUpdatePlayerMission(Connection conn, PlayerMissionData data) throws SQLException {
         String sql = """
-            INSERT INTO player_missions (uuid, mission_id, progress, completed, rewarded, assigned_time)
+            INSERT INTO player_missions (uuid, mission_id, progress, completed, rewarded, assigned_at)
             VALUES (?, ?, ?, ?, ?, ?)
             ON DUPLICATE KEY UPDATE
                 progress = VALUES(progress),
                 completed = VALUES(completed),
                 rewarded = VALUES(rewarded),
-                assigned_time = VALUES(assigned_time)
+                assigned_at = VALUES(assigned_at)
             """;
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {

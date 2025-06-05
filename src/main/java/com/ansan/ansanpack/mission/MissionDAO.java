@@ -6,28 +6,64 @@ import java.util.List;
 
 public class MissionDAO {
 
-    public static List<MissionData> loadAllMissions() throws SQLException {
-        List<MissionData> result = new ArrayList<>();
-        try (Connection conn = MissionDB.getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM missions");
-             ResultSet rs = stmt.executeQuery()) {
-            while (rs.next()) {
-                result.add(new MissionData(
-                        rs.getString("id"),
-                        rs.getString("type"),
-                        rs.getString("description"),
-                        rs.getString("goal_type"),
-                        rs.getInt("goal_value"),
-                        (Integer) rs.getObject("reward_id"), // nullable
-                        rs.getInt("priority"),
-                        rs.getString("requires")
-                ));
+
+//    public static List<MissionData> loadAllMissions() throws SQLException {
+//        List<MissionData> result = new ArrayList<>();
+//        try (Connection conn = MissionDB.getConnection();
+//             PreparedStatement stmt = conn.prepareStatement("SELECT * FROM missions");
+//             ResultSet rs = stmt.executeQuery()) {
+//            while (rs.next()) {
+//                Integer rewardId = rs.getObject("reward_id") != null ? rs.getInt("reward_id") : null;
+//
+//                result.add(new MissionData(
+//                        rs.getString("id"),
+//                        rs.getString("type"),
+//                        rs.getString("description"),
+//                        rs.getString("goal_type"),
+//                        rs.getInt("goal_value"),
+//                        rewardId,
+//                        rs.getInt("priority"),
+//                        rs.getString("requires")
+//                ));
+//            }
+//        } catch (Exception e) {
+//            throw new SQLException("미션 목록 로딩 실패", e);
+//        }
+//        return result;
+//    }
+public static List<MissionData> loadAllMissions() throws SQLException {
+    List<MissionData> result = new ArrayList<>();
+    try (Connection conn = MissionDB.getConnection();
+         PreparedStatement stmt = conn.prepareStatement("SELECT * FROM missions");
+         ResultSet rs = stmt.executeQuery()) {
+
+        while (rs.next()) {
+            Object rewardObj = rs.getObject("reward_id");
+            Integer rewardId = (rewardObj != null) ? ((Number) rewardObj).intValue() : null;
+
+            String id = rs.getString("id");
+            if (id == null || id.isBlank()) {
+                System.err.println("[AnsanPack] id가 비어있는 미션 건너뜀");
+                continue;
             }
-        } catch (Exception e) {
-            throw new SQLException("미션 목록 로딩 실패", e);
+
+            result.add(new MissionData(
+                    id,
+                    rs.getString("type"),
+                    rs.getString("description"),
+                    rs.getString("goal_type"),
+                    rs.getInt("goal_value"),
+                    rewardId,
+                    rs.getInt("priority"),
+                    rs.getString("requires")
+            ));
         }
-        return result;
+    } catch (Exception e) {
+        throw new SQLException("미션 목록 로딩 실패", e);
     }
+    return result;
+}
+
 
     public static List<MissionReward> loadAllRewards() throws SQLException {
         List<MissionReward> result = new ArrayList<>();
@@ -35,13 +71,18 @@ public class MissionDAO {
              PreparedStatement stmt = conn.prepareStatement("SELECT * FROM mission_rewards");
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                result.add(new MissionReward(
-                        rs.getInt("id"),
-                        rs.getString("item_id"),
-                        rs.getInt("reward_value"),
-                        rs.getString("reward_type"),
-                        rs.getString("type")
-                ));
+                int id = rs.getInt("id");
+                String itemId = rs.getString("item_id");
+                int rewardValue = rs.getInt("value");
+                String rewardType = rs.getString("reward_type");
+                String type = rs.getString("type");
+
+                if (rewardType == null || type == null) {
+                    System.err.println("[AnsanPack] 잘못된 보상 항목 무시됨 (id: " + id + ", reward_type 또는 type이 null)");
+                    continue;
+                }
+
+                result.add(new MissionReward(id, itemId, rewardValue, rewardType, type));
             }
         } catch (Exception e) {
             throw new SQLException("보상 목록 로딩 실패", e);

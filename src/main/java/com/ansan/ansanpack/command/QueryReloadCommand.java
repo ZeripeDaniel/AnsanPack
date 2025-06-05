@@ -1,5 +1,6 @@
 package com.ansan.ansanpack.command;
 
+import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.config.*;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
@@ -20,13 +21,14 @@ public class QueryReloadCommand {
         try {
             UpgradeConfigManager.loadConfigFromMySQL();
             UpgradeChanceManager.loadChancesFromMySQL();
-            UpgradeConfigManager.loadConfigFromMySQL();
-            UpgradeChanceManager.loadChancesFromMySQL();
             JobCostManager.loadFromMySQL();
             MobDropManager.loadFromMySQL();
             AnvilRecipeManager.loadFromDatabase();
+            MissionManager.load();
+
             context.getSource().sendSuccess(() -> Component.literal("서버 설정을 MySQL에서 다시 불러왔습니다."), true);
         } catch (Exception e) {
+            AnsanPack.LOGGER.error("[AnsanPack] 설정 로딩 중 오류", e);
             context.getSource().sendFailure(Component.literal("MySQL 로딩 실패: " + e.getMessage()));
         }
         return Command.SINGLE_SUCCESS;

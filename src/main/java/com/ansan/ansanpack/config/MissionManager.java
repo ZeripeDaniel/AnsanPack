@@ -21,25 +21,59 @@ public class MissionManager {
     private static final List<MissionReward> dailyRewardPool = new ArrayList<>();
     private static final List<MissionReward> weeklyRewardPool = new ArrayList<>();
 
-    public static void load() {
-        missions.clear();
-        rewardMap.clear();
-        dailyRewardPool.clear();
-        weeklyRewardPool.clear();
+//    public static void load() {
+//        missions.clear();
+//        rewardMap.clear();
+//        dailyRewardPool.clear();
+//        weeklyRewardPool.clear();
+//
+//        try {
+//            for (MissionData data : MissionDAO.loadAllMissions()) {
+//                missions.put(data.id, data);
+//            }
+//            for (MissionReward r : MissionDAO.loadAllRewards()) {
+//                rewardMap.put(r.id, r);
+//                if ("daily".equals(r.type)) dailyRewardPool.add(r);
+//                else if ("weekly".equals(r.type)) weeklyRewardPool.add(r);
+//            }
+//        } catch (Exception e) {
+//            throw new RuntimeException("[AnsanPack] 미션 로딩 중 오류 발생", e);
+//        }
+//    }
+public static void load() {
+    missions.clear();
+    rewardMap.clear();
+    dailyRewardPool.clear();
+    weeklyRewardPool.clear();
 
-        try {
-            for (MissionData data : MissionDAO.loadAllMissions()) {
-                missions.put(data.id, data);
+    try {
+        for (MissionData data : MissionDAO.loadAllMissions()) {
+            if (data == null || data.id == null) {
+                AnsanPack.LOGGER.warn("로드된 미션 중 잘못된 항목 발견: {}", data);
+                continue;
             }
-            for (MissionReward r : MissionDAO.loadAllRewards()) {
-                rewardMap.put(r.id, r);
-                if ("daily".equals(r.type)) dailyRewardPool.add(r);
-                else if ("weekly".equals(r.type)) weeklyRewardPool.add(r);
-            }
-        } catch (Exception e) {
-            throw new RuntimeException("[AnsanPack] 미션 로딩 중 오류 발생", e);
+            missions.put(data.id, data);
         }
+
+        for (MissionReward r : MissionDAO.loadAllRewards()) {
+            if (r == null || r.rewardType == null) {
+                AnsanPack.LOGGER.warn("로드된 보상 중 잘못된 항목 발견: {}", r);
+                continue;
+            }
+
+            rewardMap.put(r.id, r);
+            if ("daily".equals(r.type)) dailyRewardPool.add(r);
+            else if ("weekly".equals(r.type)) weeklyRewardPool.add(r);
+            else AnsanPack.LOGGER.warn("알 수 없는 보상 type: {}", r.type);
+        }
+
+        AnsanPack.LOGGER.info("미션 {}개, 보상 {}개 로드 완료", missions.size(), rewardMap.size());
+
+    } catch (Exception e) {
+        throw new RuntimeException("[AnsanPack] 미션 로딩 중 오류 발생", e);
     }
+}
+
 
     public static Collection<MissionData> getAllMissions() {
         return missions.values();

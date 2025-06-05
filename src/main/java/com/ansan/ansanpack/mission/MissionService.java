@@ -1,6 +1,5 @@
 package com.ansan.ansanpack.mission;
 
-import com.ansan.ansanpack.mission.MissionDB;
 import com.ansan.ansanpack.config.MissionManager;
 
 import java.sql.*;
@@ -16,6 +15,14 @@ public class MissionService {
 
         try (Connection conn = MissionDB.getConnection()) {
             List<PlayerMissionData> existing = PlayerMissionDAO.loadMissionsForPlayer(conn, uuid);
+
+            for (PlayerMissionData data : existing) {
+                var def = MissionManager.getMission(data.missionId);
+                if (def != null) {
+                    data.type = def.type;
+                    data.description = def.description; // ✅ 기존 미션에 설명 세팅
+                }
+            }
 
             if (!existing.isEmpty()) {
                 playerMissionCache.put(uuid, existing);
@@ -42,6 +49,8 @@ public class MissionService {
             Timestamp now = getCurrentTimestamp(conn);
             for (MissionData mission : selected) {
                 PlayerMissionData data = new PlayerMissionData(uuid, mission.id, 0, false, false, now);
+                data.type = mission.type;
+                data.description = mission.description; // ✅ 신규 미션에도 설명 세팅
                 PlayerMissionDAO.saveOrUpdatePlayerMission(conn, data);
                 assigned.add(data);
             }

@@ -3,6 +3,7 @@ package com.ansan.ansanpack.network;
 import com.ansan.ansanpack.gui.MissionScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -24,8 +25,10 @@ public class MessageRewardResult {
 
     public static void handle(MessageRewardResult msg, Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            if (Minecraft.getInstance().screen instanceof MissionScreen screen) {
-                screen.markMissionRewarded(msg.missionId); // 🔧 보상 받은 미션을 표시
+            if (FMLEnvironment.dist.isClient()) {
+                if (Minecraft.getInstance().screen instanceof MissionScreen screen) {
+                    screen.markMissionRewarded(msg.missionId);
+                }
             }
         });
         ctx.get().setPacketHandled(true);

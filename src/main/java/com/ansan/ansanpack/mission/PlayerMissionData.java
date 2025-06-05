@@ -11,6 +11,9 @@ public class PlayerMissionData {
     public boolean rewarded;
     public final Timestamp assignedAt;
 
+    public String type; // ⭐ 클라이언트에서 미션 타입 구분용
+    public String description; // 클라이언트에서 미션 타입 구분용
+
     public PlayerMissionData(String uuid, String missionId, int progress, boolean completed, boolean rewarded, Timestamp assignedAt) {
         this.uuid = uuid;
         this.missionId = missionId;
