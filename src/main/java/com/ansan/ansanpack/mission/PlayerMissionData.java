@@ -13,6 +13,7 @@ public class PlayerMissionData {
 
     public String type; // ⭐ 클라이언트에서 미션 타입 구분용
     public String description; // 클라이언트에서 미션 타입 구분용
+    public int goalValue; // ✅ 목표 수치 (서버에서 UI 전송용)
 
     public PlayerMissionData(String uuid, String missionId, int progress, boolean completed, boolean rewarded, Timestamp assignedAt) {
         this.uuid = uuid;

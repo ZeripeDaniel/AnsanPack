@@ -2,13 +2,14 @@ package com.ansan.ansanpack.config;
 
 import com.ansan.ansanpack.AnsanPack;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Item;
 
 import java.sql.*;
 import java.util.*;
 
 public class MobDropManager {
-    public static record DropEntry(ResourceLocation itemId, double chance, int count) {}
+
+    // 🔧 entityType 추가: null이면 "모든 적대 몹 공용"
+    public static record DropEntry(ResourceLocation itemId, double chance, int count, ResourceLocation entityType) {}
 
     private static final List<DropEntry> drops = new ArrayList<>();
 
@@ -22,16 +23,22 @@ public class MobDropManager {
                     "?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true";
 
             try (Connection conn = DriverManager.getConnection(url, props.getProperty("db.user"), props.getProperty("db.password"))) {
-                PreparedStatement stmt = conn.prepareStatement("SELECT item_id, chance, count FROM mob_drops WHERE enabled = TRUE");
+                // 🔄 entity_type 포함해서 쿼리
+                PreparedStatement stmt = conn.prepareStatement("SELECT item_id, chance, count, entity_type FROM mob_drops WHERE enabled = TRUE");
                 ResultSet rs = stmt.executeQuery();
 
                 while (rs.next()) {
                     String itemIdStr = rs.getString("item_id");
                     double chance = rs.getDouble("chance");
                     int count = rs.getInt("count");
+                    String entityTypeStr = rs.getString("entity_type");
 
                     ResourceLocation itemId = new ResourceLocation(itemIdStr);
-                    drops.add(new DropEntry(itemId, chance, count));
+                    ResourceLocation entityType = (entityTypeStr != null && !entityTypeStr.isBlank())
+                            ? new ResourceLocation(entityTypeStr)
+                            : null;
+
+                    drops.add(new DropEntry(itemId, chance, count, entityType));
                 }
 
                 AnsanPack.LOGGER.info("[AnsanPack] 몹 드랍 아이템 {}개 로딩됨", drops.size());

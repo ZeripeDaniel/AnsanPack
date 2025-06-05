@@ -2,6 +2,7 @@ package com.ansan.ansanpack.command;
 
 import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.config.MissionManager;
+import com.ansan.ansanpack.mission.MissionResetService;
 import com.ansan.ansanpack.mission.MissionService;
 import com.ansan.ansanpack.network.MessageOpenMissionUI;
 import com.mojang.brigadier.CommandDispatcher;
@@ -18,22 +19,25 @@ public class MissionCommand {
                     ServerPlayer player = ctx.getSource().getPlayer();
                     var missionList = MissionService.getOrAssignMissions(player.getStringUUID());
 
-                    // PlayerMissionData → MissionInfo 변환
                     var infoList = missionList.stream().map(data -> {
                         var def = MissionManager.getMission(data.missionId);
                         return new MessageOpenMissionUI.MissionInfo(
                                 data.missionId,
-                                def != null ? def.description : "(알 수 없음)",  // 🔍 description 사용
+                                def != null ? def.description : "(알 수 없음)",
                                 data.progress,
+                                def != null ? def.goalValue : 1, // ✅ goalValue 추가
                                 data.completed,
                                 data.rewarded,
-                                def != null ? def.type : "unknown"               // 🔍 type도 fallback 처리
+                                def != null ? def.type : "unknown"
                         );
                     }).toList();
 
-                    // 클라이언트에게 전송
+                    // ✅ 다시받기 가능 여부 판단
+                    boolean canReset = MissionResetService.canResetDailyMissions(player.getStringUUID());
+
+                    // ✅ canReset 포함하여 전송
                     AnsanPack.NETWORK.sendTo(
-                            new MessageOpenMissionUI(infoList),
+                            new MessageOpenMissionUI(infoList, canReset),
                             player.connection.connection,
                             NetworkDirection.PLAY_TO_CLIENT
                     );

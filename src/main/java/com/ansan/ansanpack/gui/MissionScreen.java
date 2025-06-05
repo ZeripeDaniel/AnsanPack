@@ -5,6 +5,7 @@ import com.ansan.ansanpack.config.MissionManager;
 import com.ansan.ansanpack.mission.PlayerMissionData;
 import com.ansan.ansanpack.network.MessageClaimReward;
 import com.ansan.ansanpack.network.MessageOpenMissionUI;
+import com.ansan.ansanpack.network.MessageRequestMissionReset;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -18,33 +19,18 @@ public class MissionScreen extends Screen {
     private final List<PlayerMissionData> missions;
     private final List<PlayerMissionData> dailyMissions;
     private final List<PlayerMissionData> weeklyMissions;
+    private final boolean canReset; // ✅ 추가
 
-    public static void open(List<PlayerMissionData> missions) {
-        Minecraft.getInstance().setScreen(new MissionScreen(missions));
+    public static void open(List<PlayerMissionData> missions, boolean canReset) {
+        Minecraft.getInstance().setScreen(new MissionScreen(missions, canReset));
     }
 
-    public MissionScreen(List<PlayerMissionData> missions) {
+    public MissionScreen(List<PlayerMissionData> missions, boolean canReset) {
         super(Component.literal("미션 목록"));
         this.missions = missions;
-        this.dailyMissions = missions.stream()
-                .filter(m -> "daily".equals(m.type))
-                .collect(Collectors.toList());
-        this.weeklyMissions = missions.stream()
-                .filter(m -> "weekly".equals(m.type))
-                .collect(Collectors.toList());
-//        this.dailyMissions = missions.stream()
-//                .filter(m -> {
-//                    var def = MissionManager.getMission(m.missionId);
-//                    return def != null && "daily".equals(def.type);
-//                })
-//                .collect(Collectors.toList());
-//
-//        this.weeklyMissions = missions.stream()
-//                .filter(m -> {
-//                    var def = MissionManager.getMission(m.missionId);
-//                    return def != null && "weekly".equals(def.type);
-//                })
-//                .collect(Collectors.toList());
+        this.canReset = canReset;
+        this.dailyMissions = missions.stream().filter(m -> "daily".equals(m.type)).collect(Collectors.toList());
+        this.weeklyMissions = missions.stream().filter(m -> "weekly".equals(m.type)).collect(Collectors.toList());
     }
 
     @Override
@@ -60,8 +46,12 @@ public class MissionScreen extends Screen {
             PlayerMissionData mission = dailyMissions.get(i);
             int yOffset = startY + i * 25;
 
+            int goal = mission.goalValue > 0 ? mission.goalValue : 1;
+            int progress = mission.progress;
+            int percent = (int)((progress * 100.0) / goal);
+
             String label = mission.description + " " +
-                    mission.progress + "% " +
+                    progress + " / " + goal + " (" + percent + "%) " +
                     (mission.completed ? "✅" : "") +
                     (mission.rewarded ? "🎁" : "");
 
@@ -78,8 +68,12 @@ public class MissionScreen extends Screen {
             PlayerMissionData mission = weeklyMissions.get(i);
             int yOffset = startY + i * 25;
 
+            int goal = mission.goalValue > 0 ? mission.goalValue : 1;
+            int progress = mission.progress;
+            int percent = (int)((progress * 100.0) / goal);
+
             String label = mission.description + " " +
-                    mission.progress + "% " +
+                    progress + " / " + goal + " (" + percent + "%) " +
                     (mission.completed ? "✅" : "") +
                     (mission.rewarded ? "🎁" : "");
 
@@ -95,9 +89,16 @@ public class MissionScreen extends Screen {
         int centerX = this.width / 2 - 60;
 
         // 다시받기 버튼
-        this.addRenderableWidget(Button.builder(Component.literal("다시받기"), btn -> {
-            // TODO: 다시받기 로직
-        }).pos(centerX - 80, btnY).size(60, 20).build());
+        Button resetBtn = Button.builder(Component.literal("다시받기"), btn -> {
+            AnsanPack.NETWORK.sendToServer(new MessageRequestMissionReset());
+        }).pos(centerX - 80, btnY).size(60, 20).build();
+
+        resetBtn.active = canReset; // ✅ 오늘이면 비활성화
+        this.addRenderableWidget(resetBtn);
+//        // 다시받기 버튼
+//        this.addRenderableWidget(Button.builder(Component.literal("다시받기"), btn -> {
+//            // TODO: 다시받기 로직
+//        }).pos(centerX - 80, btnY).size(60, 20).build());
 
         // 보상수령 버튼
         //boolean canClaimDaily = dailyMissions.stream().allMatch(m -> m.completed && !m.rewarded);
@@ -137,16 +138,18 @@ public class MissionScreen extends Screen {
         }
         this.init(); // UI 재갱신
     }
-
-    public static void openFromInfo(List<MessageOpenMissionUI.MissionInfo> infoList) {
+    public static void openFromInfo(List<MessageOpenMissionUI.MissionInfo> infoList, boolean canReset) {
         List<PlayerMissionData> missions = infoList.stream().map(info -> {
             PlayerMissionData data = new PlayerMissionData("", info.missionId, info.progress, info.completed, info.rewarded, null);
             data.type = info.type;
             data.description = info.description;
+            data.goalValue = info.goalValue; // ✅ 목표 수치 클라이언트에 전달
             return data;
         }).toList();
-        Minecraft.getInstance().setScreen(new MissionScreen(missions));
+        Minecraft.getInstance().setScreen(new MissionScreen(missions, canReset));
     }
+
+
     @Override
     public void render(GuiGraphics g, int mx, int my, float pt) {
         this.renderBackground(g);

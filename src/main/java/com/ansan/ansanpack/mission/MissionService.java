@@ -1,8 +1,11 @@
 package com.ansan.ansanpack.mission;
 
+import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.config.MissionManager;
 
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.temporal.IsoFields;
 import java.util.*;
 
 public class MissionService {
@@ -16,15 +19,35 @@ public class MissionService {
         try (Connection conn = MissionDB.getConnection()) {
             List<PlayerMissionData> existing = PlayerMissionDAO.loadMissionsForPlayer(conn, uuid);
 
+            boolean needsReassign = false;
+            LocalDate today = LocalDate.now();
+            int currentWeek = today.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
+            int currentYear = today.get(IsoFields.WEEK_BASED_YEAR);
+
             for (PlayerMissionData data : existing) {
                 var def = MissionManager.getMission(data.missionId);
                 if (def != null) {
                     data.type = def.type;
-                    data.description = def.description; // ✅ 기존 미션에 설명 세팅
+                    data.description = def.description;
+
+                    // 여기를 수정했음: Timestamp → LocalDate 변환
+                    LocalDate assignedDate = data.assignedAt.toLocalDateTime().toLocalDate();
+
+                    if ("daily".equals(def.type) && assignedDate.isBefore(today)) {
+                        needsReassign = true;
+                        break;
+                    } else if ("weekly".equals(def.type)) {
+                        int assignedWeek = assignedDate.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
+                        int assignedYear = assignedDate.get(IsoFields.WEEK_BASED_YEAR);
+                        if (assignedWeek != currentWeek || assignedYear != currentYear) {
+                            needsReassign = true;
+                            break;
+                        }
+                    }
                 }
             }
 
-            if (!existing.isEmpty()) {
+            if (!existing.isEmpty() && !needsReassign) {
                 playerMissionCache.put(uuid, existing);
                 return existing;
             }
@@ -50,17 +73,20 @@ public class MissionService {
             for (MissionData mission : selected) {
                 PlayerMissionData data = new PlayerMissionData(uuid, mission.id, 0, false, false, now);
                 data.type = mission.type;
-                data.description = mission.description; // ✅ 신규 미션에도 설명 세팅
+                data.description = mission.description;
                 PlayerMissionDAO.saveOrUpdatePlayerMission(conn, data);
                 assigned.add(data);
+                AnsanPack.LOGGER.info("[미션할당] UUID={}, 신규 {} 미션 할당됨: ID={}, 설명={}", uuid, mission.type, mission.id, mission.description);
             }
 
             playerMissionCache.put(uuid, assigned);
+
             return assigned;
 
         } catch (Exception e) {
             throw new RuntimeException("[AnsanPack] 미션 할당 오류: " + e.getMessage(), e);
         }
+
     }
 
     private static Timestamp getCurrentTimestamp(Connection conn) throws SQLException {
@@ -76,5 +102,9 @@ public class MissionService {
 
     public static void clearCache(String uuid) {
         playerMissionCache.remove(uuid);
+    }
+
+    public static void clearAllCache() {
+        playerMissionCache.clear();
     }
 }

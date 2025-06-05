@@ -2,6 +2,7 @@ package com.ansan.ansanpack.command;
 
 import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.config.*;
+import com.ansan.ansanpack.mission.MissionService;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
@@ -25,6 +26,7 @@ public class QueryReloadCommand {
             MobDropManager.loadFromMySQL();
             AnvilRecipeManager.loadFromDatabase();
             MissionManager.load();
+            MissionService.clearAllCache(); // 여기를 수정했음: 미션 캐시도 리셋
 
             context.getSource().sendSuccess(() -> Component.literal("서버 설정을 MySQL에서 다시 불러왔습니다."), true);
         } catch (Exception e) {

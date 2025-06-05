@@ -1,5 +1,7 @@
 package com.ansan.ansanpack.mission;
 
+import com.ansan.ansanpack.AnsanPack;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,5 +49,7 @@ public class PlayerMissionDAO {
             stmt.setTimestamp(6, data.assignedAt);
             stmt.executeUpdate();
         }
+        AnsanPack.LOGGER.debug("[DB] 미션 저장: UUID={}, 미션ID={}, 진행도={}, 완료여부={}", data.uuid, data.missionId, data.progress, data.completed);
+
     }
 }

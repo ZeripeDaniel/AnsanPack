@@ -152,6 +152,21 @@ public class AnsanPack {
                     MessageRewardResult::decode,
                     MessageRewardResult::handle
             );
+
+            AnsanPack.NETWORK.registerMessage(packetId++,
+                    MessageSyncMoveDistance.class,
+                    MessageSyncMoveDistance::encode,
+                    MessageSyncMoveDistance::decode,
+                    MessageSyncMoveDistance::handle
+            );
+
+            AnsanPack.NETWORK.registerMessage(packetId++,
+                    MessageRequestMissionReset.class,
+                    MessageRequestMissionReset::encode,
+                    MessageRequestMissionReset::decode,
+                    MessageRequestMissionReset::handle
+            );
+
         });
     }
     private void clientSetup(final FMLClientSetupEvent event) {

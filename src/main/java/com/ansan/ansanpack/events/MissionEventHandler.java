@@ -16,14 +16,17 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.event.entity.player.ItemFishedEvent;
 import net.minecraftforge.event.level.BlockEvent;
 
-
 import java.sql.Connection;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @Mod.EventBusSubscriber(modid = AnsanPack.MODID)
 public class MissionEventHandler {
 
-    private static final java.util.Map<String, net.minecraft.world.phys.Vec3> lastPositions = new java.util.HashMap<>();
+    // 이동 미션은 클라이언트 측에서 추적하고 /미션 화면에서만 서버에 전송함
+    //private static final Map<String, net.minecraft.world.phys.Vec3> lastPositions = new HashMap<>();
+
     @SubscribeEvent
     public static void onPlayerEat(PlayerInteractEvent.RightClickItem event) {
         Player player = event.getEntity();
@@ -35,12 +38,14 @@ public class MissionEventHandler {
         List<PlayerMissionData> missions = MissionService.getOrAssignMissions(player.getStringUUID());
 
         for (PlayerMissionData mission : missions) {
+            if (mission.completed) continue; // 여기를 수정했음: 완료된 미션은 무시
+
             MissionData def = MissionManager.getMission(mission.missionId);
             if (def == null || !"eat".equals(def.goalType)) continue;
 
             List<MissionCondition> conditions = MissionConditionDAO.getConditions(mission.missionId);
+            boolean match = conditions.isEmpty();
 
-            boolean match = conditions.isEmpty(); // 조건 없으면 전부 허용
             for (MissionCondition cond : conditions) {
                 if ("item_id".equals(cond.key) && "eq".equals(cond.comparison)) {
                     String itemId = ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
@@ -71,18 +76,20 @@ public class MissionEventHandler {
         Player player = event.getEntity();
         if (player.level().isClientSide) return;
 
-        List<ItemStack> drops = event.getDrops(); // 낚은 아이템들
+        List<ItemStack> drops = event.getDrops();
         if (drops.isEmpty()) return;
 
         List<PlayerMissionData> missions = MissionService.getOrAssignMissions(player.getStringUUID());
 
         for (PlayerMissionData mission : missions) {
+            if (mission.completed) continue; // 여기를 수정했음: 완료된 미션은 무시
+
             MissionData def = MissionManager.getMission(mission.missionId);
             if (def == null || !"fishing".equals(def.goalType)) continue;
 
             List<MissionCondition> conditions = MissionConditionDAO.getConditions(mission.missionId);
+            boolean match = conditions.isEmpty();
 
-            boolean match = conditions.isEmpty(); // 조건 없으면 통과
             for (MissionCondition cond : conditions) {
                 if ("item_id".equals(cond.key) && "eq".equals(cond.comparison)) {
                     match = false;
@@ -110,6 +117,7 @@ public class MissionEventHandler {
             }
         }
     }
+
     @SubscribeEvent
     public static void onEntityKilled(LivingDeathEvent event) {
         if (!(event.getSource().getEntity() instanceof ServerPlayer player)) return;
@@ -150,38 +158,38 @@ public class MissionEventHandler {
 
         MissionEventDispatcher.onBlockMined(player, blockId);
     }
+// 이동 미션은 클라이언트 측에서 추적하고 /미션 화면에서만 서버에 전송함
 
-    @SubscribeEvent
-    public static void onPlayerTick(net.minecraftforge.event.TickEvent.PlayerTickEvent event) {
-        if (!(event.player instanceof ServerPlayer player)) return;
-        if (player.level().isClientSide) return;
-
-        String uuid = player.getStringUUID();
-        net.minecraft.world.phys.Vec3 current = player.position();
-        net.minecraft.world.phys.Vec3 last = lastPositions.get(uuid);
-
-        if (last != null) {
-            double dx = current.x - last.x;
-            double dy = current.y - last.y;
-            double dz = current.z - last.z;
-            double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-
-            if (dist > 0.05) { // 너무 작은 값은 무시 (서버 흔들림 방지)
-                MissionEventDispatcher.onPlayerMoved(player, dist);
-            }
-        }
-
-        lastPositions.put(uuid, current);
-    }
+//    @SubscribeEvent
+//    public static void onPlayerTick(net.minecraftforge.event.TickEvent.PlayerTickEvent event) {
+//        if (!(event.player instanceof ServerPlayer player)) return;
+//        if (player.level().isClientSide) return;
+//
+//        String uuid = player.getStringUUID();
+//        net.minecraft.world.phys.Vec3 current = player.position();
+//        net.minecraft.world.phys.Vec3 last = lastPositions.get(uuid);
+//
+//        if (last != null) {
+//            double dx = current.x - last.x;
+//            double dy = current.y - last.y;
+//            double dz = current.z - last.z;
+//            double dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
+//
+//            if (dist > 0.05) {
+//                MissionEventDispatcher.onPlayerMoved(player, dist);
+//            }
+//        }
+//
+//        lastPositions.put(uuid, current);
+//    }
 
     @SubscribeEvent
     public static void onPlayerWakeUp(net.minecraftforge.event.entity.player.PlayerWakeUpEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
         if (player.level().isClientSide) return;
 
-        if (!event.updateLevel()) return; // 세계 시간이 실제로 아침이 된 경우만 처리
+        if (!event.updateLevel()) return;
 
         MissionEventDispatcher.onPlayerSlept(player);
     }
-
 }
