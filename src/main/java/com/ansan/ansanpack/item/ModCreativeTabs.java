@@ -23,11 +23,13 @@ public class ModCreativeTabs {
                         output.accept(ModItems.THOUSAND_COIN.get());
                         output.accept(ModItems.CHUNK_PURCHASE_TICKET.get());
                         output.accept(ModItems.REINFORCE_STONE.get());
+                        output.accept(ModItems.ETERNITY_STONE.get());
                         output.accept(ModItems.MINOR_HEALING_POTION.get());
                         output.accept(ModItems.MEDIUM_HEALING_POTION.get());
                         output.accept(ModItems.MAJOR_HEALING_POTION.get());
                         output.accept(ModItems.SUPER_HEALING_POTION.get());
                         output.accept(ModItems.RANDOM_PET_BOX.get());
+
                     })
                     .build());
 }

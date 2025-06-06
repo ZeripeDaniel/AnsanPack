@@ -128,29 +128,51 @@ public class QueryRegisterCommand {
         return Command.SINGLE_SUCCESS;
     }
     private static float[] generateChances(int maxLevel) {
-        if (maxLevel <= 15) {
-            float[] chances = new float[maxLevel + 1];
-            for (int i = 0; i <= maxLevel; i++) {
-                float chance = 0.7f * (1.0f - (float)i / maxLevel);
-                chances[i] = Math.max(0.0f, Math.round(chance * 100f) / 100f);
-            }
-            return chances;
-        } else {
-            float[] base = new float[] {
-                    0.7f, 0.6f, 0.55f, 0.5f, 0.45f, 0.4f,
-                    0.35f, 0.3f, 0.25f, 0.2f,
-                    0.15f, 0.11f, 0.08f, 0.05f, 0.03f, 0.0f
-            };
-            float[] chances = new float[maxLevel + 1];
-            System.arraycopy(base, 0, chances, 0, base.length);
+        float[] chances = new float[maxLevel + 1];
 
-            int extraLevels = maxLevel - 15;
-            for (int i = 16; i <= maxLevel; i++) {
-                float chance = 0.03f * (1.0f - (float)(i - 15) / (extraLevels));
-                chances[i] = Math.max(0.0f, Math.round(chance * 100f) / 100f);
-            }
+        if (maxLevel < 1) {
+            chances[0] = 0.0f;
             return chances;
         }
+
+        for (int i = 0; i < maxLevel; i++) {
+            float chance;
+
+            if (i <= 9) {
+                // 0~9강: 70% → 10%
+                chance = 0.7f - (0.6f / 9f) * i;
+            } else if (i <= 14) {
+                // 10~14강: 10% → 6% 부드럽게 하강
+                chance = 0.10f - (0.04f / 4f) * (i - 10);  // i=10 → 10%, i=14 → 6%
+            } else {
+                // 15~(maxLevel-1): 5% → 1% 선형 하강
+                int hardLevels = maxLevel - 15;
+                float ratio = (float)(i - 15) / Math.max(1, hardLevels);  // 방어적 처리
+                chance = 0.05f - 0.04f * ratio; // i=15 → 5%, i=max-1 → 1%
+            }
+
+            // 마지막 전 단계는 무조건 최소 1%
+            if (i == maxLevel - 1) {
+                chance = Math.max(0.01f, chance);
+            }
+
+            // 1% 하한 유지, 마지막 전 외에는 1% 미만 허용 가능
+            if (i < maxLevel - 1) {
+                chance = Math.max(0.005f, chance);
+            }
+
+            // 10% 초과 방지
+            chance = Math.min(chance, 0.10f);
+
+            // 반올림
+            chances[i] = Math.round(chance * 100f) / 100f;
+        }
+
+        // 마지막 강화는 0%
+        chances[maxLevel] = 0.0f;
+
+        return chances;
     }
+
 
 }

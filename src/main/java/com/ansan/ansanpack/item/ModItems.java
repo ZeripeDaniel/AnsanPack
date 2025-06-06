@@ -21,4 +21,5 @@ public class ModItems {
     public static final RegistryObject<Item> MAJOR_HEALING_POTION = ITEMS.register("major_healing_potion", () -> new CustomPotionItem(new Item.Properties().stacksTo(16), 0.5f));
     public static final RegistryObject<Item> SUPER_HEALING_POTION = ITEMS.register("super_healing_potion", () -> new CustomPotionItem(new Item.Properties().stacksTo(16), 0.7f));
     public static final RegistryObject<Item> RANDOM_PET_BOX = ITEMS.register("random_pet_box", () -> new RandomItemBox(new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> ETERNITY_STONE = ITEMS.register("eternity_stone", () -> new Item(new Item.Properties().stacksTo(64)));
 }

@@ -23,14 +23,14 @@ public class MobDropManager {
 
             try (Connection conn = DriverManager.getConnection(url, props.getProperty("db.user"), props.getProperty("db.password"))) {
                 PreparedStatement stmt = conn.prepareStatement(
-                        "SELECT item_id, chance, count, entity_id FROM mob_drops WHERE enabled = TRUE");
+                        "SELECT item_id, chance, count, entity_type FROM mob_drops WHERE enabled = TRUE");
                 ResultSet rs = stmt.executeQuery();
 
                 while (rs.next()) {
                     String itemIdStr = rs.getString("item_id");
                     double chance = rs.getDouble("chance");
                     int count = rs.getInt("count");
-                    String entityIdStr = rs.getString("entity_id");
+                    String entityIdStr = rs.getString("entity_type");
 
                     ResourceLocation itemId = new ResourceLocation(itemIdStr);
                     ResourceLocation entityId = null;

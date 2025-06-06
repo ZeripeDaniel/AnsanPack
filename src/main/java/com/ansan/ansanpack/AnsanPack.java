@@ -1,6 +1,5 @@
 package com.ansan.ansanpack;
 
-import com.ansan.ansanpack.client.ModParticles;
 import com.ansan.ansanpack.command.*;
 import com.ansan.ansanpack.common.events.AnvilEnchantTransferHandler;
 import com.ansan.ansanpack.config.*;
@@ -63,7 +62,7 @@ public class AnsanPack {
         ModItems.ITEMS.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
         MENUS.register(modEventBus);
-        ModParticles.PARTICLES.register(modEventBus);
+
 
         // Register CoinInteractionHandler to the Forge event bus
         MinecraftForge.EVENT_BUS.register(new CoinInteractionHandler());
@@ -75,9 +74,6 @@ public class AnsanPack {
         MinecraftForge.EVENT_BUS.register(new UpgradeSystemEventHandler());
 
         MinecraftForge.EVENT_BUS.register(this);
-
-
-
     }
     private void setup(final FMLCommonSetupEvent event) {
         if (FMLEnvironment.dist.isDedicatedServer()) {
@@ -111,6 +107,7 @@ public class AnsanPack {
         AnvilRecipeRegisterCommand.register(event.getDispatcher());
         MissionCommand.register(event.getDispatcher());
         AddRewardCommand.register(event.getDispatcher());
+        JobRemoveCommand.register(event.getDispatcher());
     }
     private void commonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
