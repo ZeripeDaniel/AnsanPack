@@ -4,6 +4,7 @@ import com.ansan.ansanpack.command.*;
 import com.ansan.ansanpack.common.events.AnvilEnchantTransferHandler;
 import com.ansan.ansanpack.config.*;
 import com.ansan.ansanpack.events.EntityAttributeModifier;
+import com.ansan.ansanpack.events.MobDropEventHandler;
 import com.ansan.ansanpack.events.UpgradeSystemEventHandler;
 import com.ansan.ansanpack.network.*;
 import com.ansan.ansanpack.gui.UpgradeContainer;
@@ -73,6 +74,7 @@ public class AnsanPack {
         // 3. 강화 시스템 이벤트 리스너 등록
         MinecraftForge.EVENT_BUS.register(new UpgradeSystemEventHandler());
 
+        MinecraftForge.EVENT_BUS.register(new MobDropEventHandler());
         MinecraftForge.EVENT_BUS.register(this);
     }
     private void setup(final FMLCommonSetupEvent event) {

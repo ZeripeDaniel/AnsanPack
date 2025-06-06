@@ -40,7 +40,7 @@ public class MissionEventDispatcher {
                 }
             }
 
-            logProgress(player, mission, def, "upgrade", String.valueOf(match));
+           // logProgress(player, mission, def, "upgrade", String.valueOf(match));
 
             if (match) {
                 mission.progress++;
@@ -59,24 +59,24 @@ public class MissionEventDispatcher {
 
     public static void onKillEntity(ServerPlayer player, EntityType<?> killedEntityType) {
         String killedEntityId = ForgeRegistries.ENTITY_TYPES.getKey(killedEntityType).toString();
-        AnsanPack.LOGGER.warn("onKillEntity 호출됨: {}", killedEntityId);
+        //AnsanPack.LOGGER.warn("onKillEntity 호출됨: {}", killedEntityId);
 
         List<PlayerMissionData> missions = MissionService.getOrAssignMissions(player.getStringUUID());
-        AnsanPack.LOGGER.warn("플레이어 미션 수: {}", missions.size());
+        //AnsanPack.LOGGER.warn("플레이어 미션 수: {}", missions.size());
 
         for (PlayerMissionData mission : missions) {
             if (mission.completed) continue;
 
             MissionData def = MissionManager.getMission(mission.missionId);
-            AnsanPack.LOGGER.warn("미션 ID={}, 타입={}", mission.missionId, def != null ? def.goalType : "null");
+           // AnsanPack.LOGGER.warn("미션 ID={}, 타입={}", mission.missionId, def != null ? def.goalType : "null");
             if (def == null || !"kill_entity".equals(def.goalType)) continue;
 
             List<MissionCondition> conditions = MissionConditionDAO.getConditions(mission.missionId);
             boolean match = conditions.isEmpty();
-            AnsanPack.LOGGER.warn("조건 수: {}", conditions.size());
+           // AnsanPack.LOGGER.warn("조건 수: {}", conditions.size());
 
             for (MissionCondition cond : conditions) {
-                AnsanPack.LOGGER.warn("조건 key={}, comparison={}, value={}", cond.key, cond.comparison, cond.value);
+                //AnsanPack.LOGGER.warn("조건 key={}, comparison={}, value={}", cond.key, cond.comparison, cond.value);
 
                 // 🔧 여기 수정: "entity_id" → "entity_type"
                 if ("entity_type".equals(cond.key) && "eq".equals(cond.comparison)) {
@@ -91,7 +91,7 @@ public class MissionEventDispatcher {
                 }
             }
 
-            logProgress(player, mission, def, "kill_entity", match + " - entityId=" + killedEntityId);
+            //logProgress(player, mission, def, "kill_entity", match + " - entityId=" + killedEntityId);
 
             if (match) {
                 mission.progress++;
@@ -133,7 +133,7 @@ public class MissionEventDispatcher {
                 }
             }
 
-            logProgress(player, mission, def, "craft_item", match + " - itemId=" + craftedItemId);
+            //logProgress(player, mission, def, "craft_item", match + " - itemId=" + craftedItemId);
 
             if (match) {
                 mission.progress++;
@@ -175,7 +175,7 @@ public class MissionEventDispatcher {
                 }
             }
 
-            logProgress(player, mission, def, "cook", match + " - resultItemId=" + resultItemId);
+            //logProgress(player, mission, def, "cook", match + " - resultItemId=" + resultItemId);
 
             if (match) {
                 mission.progress++;
@@ -234,7 +234,7 @@ public class MissionEventDispatcher {
                 }
             }
 
-            logProgress(player, mission, def, "mine_block", match + " - blockId=" + blockId);
+           // logProgress(player, mission, def, "mine_block", match + " - blockId=" + blockId);
 
             if (match) {
                 mission.progress++;
@@ -336,7 +336,7 @@ public class MissionEventDispatcher {
             List<MissionCondition> conditions = MissionConditionDAO.getConditions(mission.missionId);
             boolean match = conditions.isEmpty();
 
-            logProgress(player, mission, def, "sleep", String.valueOf(match));
+          //  logProgress(player, mission, def, "sleep", String.valueOf(match));
 
             if (match) {
                 mission.progress++;
