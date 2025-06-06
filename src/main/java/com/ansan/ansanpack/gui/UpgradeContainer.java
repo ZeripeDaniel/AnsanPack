@@ -36,8 +36,9 @@ public class UpgradeContainer extends AbstractContainerMenu {
 
         // 강화 슬롯
         this.upgradeSlot = this.addSlot(new Slot(itemHandler, 0, 55, 40) {
-            @Override public boolean mayPlace(ItemStack stack) {
-                return stack.isDamageableItem();
+            @Override
+            public boolean mayPlace(ItemStack stack) {
+                return UpgradeConfigManager.getConfig(stack.getItem()).isPresent();
             }
         });
 

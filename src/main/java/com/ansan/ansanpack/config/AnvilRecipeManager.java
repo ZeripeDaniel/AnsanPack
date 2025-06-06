@@ -12,7 +12,7 @@ import java.util.List;
 
 public class AnvilRecipeManager {
 
-    public record AnvilRecipe(Item insertItem, Item resourceItem, int stack, Item resultItem, int costLevel) {}
+    public record AnvilRecipe(Item insertItem, Item resourceItem, int stack, Item resultItem, int costLevel, boolean isTierUpgrade) {}
 
     private static final List<AnvilRecipe> RECIPES = new ArrayList<>();
 
@@ -28,12 +28,13 @@ public class AnvilRecipeManager {
                 props.getProperty("db.database") + "?serverTimezone=Asia/Seoul&useSSL=false&allowPublicKeyRetrieval=true";
 
         try (Connection conn = DriverManager.getConnection(url, props.getProperty("db.user"), props.getProperty("db.password"));
-             PreparedStatement stmt = conn.prepareStatement("SELECT insert_item, resource_item, stack, result_item, cost_level FROM anvil_recipes");
+             PreparedStatement stmt = conn.prepareStatement("SELECT insert_item, resource_item, stack, result_item, cost_level, tier_upgrade FROM anvil_recipes");
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
                 int stack = rs.getInt("stack");
                 int cost = rs.getInt("cost_level");
+                boolean tierUpgrade = rs.getBoolean("tier_upgrade");
 
                 ResourceLocation insertId = new ResourceLocation(rs.getString("insert_item"));
                 ResourceLocation resourceId = new ResourceLocation(rs.getString("resource_item"));
@@ -44,7 +45,7 @@ public class AnvilRecipeManager {
                 Item resultItem = ForgeRegistries.ITEMS.getValue(resultId);
 
                 if (insertItem != null && resourceItem != null && resultItem != null) {
-                    RECIPES.add(new AnvilRecipe(insertItem, resourceItem, stack, resultItem, cost));
+                    RECIPES.add(new AnvilRecipe(insertItem, resourceItem, stack, resultItem, cost, tierUpgrade));
                 } else {
                     AnsanPack.LOGGER.warn("[AnsanPack] 잘못된 Anvil 레시피 - insertItem: {}, resourceItem: {}, resultItem: {}",
                             insertId, resourceId, resultId);

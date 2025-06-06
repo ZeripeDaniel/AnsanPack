@@ -110,6 +110,9 @@ public class AnsanPack {
         MissionCommand.register(event.getDispatcher());
         AddRewardCommand.register(event.getDispatcher());
         JobRemoveCommand.register(event.getDispatcher());
+        AddEffectCommand.register(event.getDispatcher());
+        CheckEffectsCommand.register(event.getDispatcher());
+        RankingCommand.register(event.getDispatcher());
     }
     private void commonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
@@ -166,6 +169,41 @@ public class AnsanPack {
                     MessageRequestMissionReset::encode,
                     MessageRequestMissionReset::decode,
                     MessageRequestMissionReset::handle
+            );
+
+            AnsanPack.NETWORK.registerMessage(packetId++,
+                    MessageInitLevel.class,
+                    MessageInitLevel::encode,
+                    MessageInitLevel::decode,
+                    MessageInitLevel::handle
+            );
+
+            AnsanPack.NETWORK.registerMessage(packetId++,
+                    MessageRequestSaveLevel.class,
+                    MessageRequestSaveLevel::encode,
+                    MessageRequestSaveLevel::decode,
+                    MessageRequestSaveLevel::handle
+            );
+
+            AnsanPack.NETWORK.registerMessage(packetId++,
+                    MessageGainExp.class,
+                    MessageGainExp::encode,
+                    MessageGainExp::decode,
+                    MessageGainExp::handle
+            );
+            // 추가된 스탯 패킷 등록
+            AnsanPack.NETWORK.registerMessage(packetId++,
+                    MessageRequestSaveStats.class,
+                    MessageRequestSaveStats::encode,
+                    MessageRequestSaveStats::decode,
+                    MessageRequestSaveStats::handle
+            );
+
+            AnsanPack.NETWORK.registerMessage(packetId++,
+                    MessageSyncStats.class,
+                    MessageSyncStats::encode,
+                    MessageSyncStats::decode,
+                    MessageSyncStats::handle
             );
 
         });

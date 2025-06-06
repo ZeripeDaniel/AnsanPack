@@ -2,7 +2,8 @@ package com.ansan.ansanpack.common.events;
 
 import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.config.AnvilRecipeManager;
-import com.ansan.ansanpack.item.ModItems;  // 영원의 돌 참조
+import com.ansan.ansanpack.config.UpgradeConfigManager;
+import com.ansan.ansanpack.item.ModItems;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -10,6 +11,9 @@ import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraftforge.event.AnvilUpdateEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.registries.ForgeRegistries;
+
+import java.util.List;
 
 @Mod.EventBusSubscriber(modid = AnsanPack.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class AnvilEnchantTransferHandler {
@@ -20,78 +24,67 @@ public class AnvilEnchantTransferHandler {
         ItemStack right = event.getRight();
         String name = event.getName();
 
-        // 영원의 돌과 조합 시 내구도 무한화 처리
+        // 1. 영원의 돌 조합 처리
         if (right.getItem() == ModItems.ETERNITY_STONE.get()) {
-            // 왼쪽 아이템에 NBT가 존재하면 복사
             if (left.hasTag()) {
-                ItemStack newItem = left.copy();  // 기존 아이템 복사
+                ItemStack newItem = left.copy();
                 CompoundTag oldTag = left.getTag();
                 CompoundTag newTag = new CompoundTag();
 
-                // 기존 NBT 값 복사
                 for (String key : oldTag.getAllKeys()) {
                     newTag.put(key, oldTag.get(key).copy());
                 }
 
-                // 내구도 무한화 적용
                 newTag.putBoolean("Unbreakable", true);
-
-                // 새로운 아이템에 NBT 설정
                 newItem.setTag(newTag);
-
-                // 인챈트 복사
                 EnchantmentHelper.setEnchantments(EnchantmentHelper.getEnchantments(left), newItem);
 
-                // 이름 설정
                 if (!name.isEmpty()) {
                     newItem.setHoverName(Component.literal(name));
                 }
 
-                // 결과 설정
                 event.setOutput(newItem);
-                event.setCost(1);  // 경험치 비용 설정 (1로 설정, 필요시 조정 가능)
-                event.setMaterialCost(1); // 재료 비용 설정 (영원의 돌 1개)
+                event.setCost(1);
+                event.setMaterialCost(1);
                 return;
             }
         }
 
-        // 기존 레시피 처리 (기존 코드 그대로 유지)
+        // 2. 커스텀 모루 조합 처리
         for (AnvilRecipeManager.AnvilRecipe recipe : AnvilRecipeManager.getRecipes()) {
             if (left.getItem() == recipe.insertItem() &&
                     right.getItem() == recipe.resourceItem() &&
                     right.getCount() >= recipe.stack()) {
 
                 ItemStack newItem = new ItemStack(recipe.resultItem());
+                CompoundTag newTag = new CompoundTag();
+                CompoundTag oldTag = left.getTag();
 
-                // 기존 NBT 복사
-                if (left.hasTag()) {
-                    CompoundTag oldTag = left.getTag();
-                    CompoundTag newTag = new CompoundTag();
+                int newUpgradeLevel = 0;
 
-                    String[] keysToCopy = {
-                            "ansan_upgrade_level", "extra_damage",
-                            "extra_helmet_armor", "extra_chest_armor",
-                            "extra_leggings_armor", "extra_boots_armor"
-                    };
+                if (oldTag != null && oldTag.contains("ansan_upgrade_level")) {
+                    int oldLevel = oldTag.getInt("ansan_upgrade_level");
 
-                    for (String key : keysToCopy) {
-                        if (oldTag.contains(key)) {
-                            newTag.put(key, oldTag.get(key).copy());
-                        }
+                    if (recipe.isTierUpgrade()) {
+                        // 티어 업그레이드: 강화 레벨 절반, 이펙트 재적용
+                        newUpgradeLevel = Math.max(0, oldLevel / 2);
+                        newTag.putInt("ansan_upgrade_level", newUpgradeLevel);
+                        applyTierUpgradeEffects(recipe.resultItem(), newTag, newUpgradeLevel);
+
+                    } else {
+                        // 일반 조합: 강화 관련 NBT만 복사
+                        newTag.putInt("ansan_upgrade_level", oldLevel);
+                        copyExtraNBT(oldTag, newTag);
                     }
-
-                    newItem.setTag(newTag);
                 }
 
-                // 인챈트 복사
+                newItem.setTag(newTag);
                 EnchantmentHelper.setEnchantments(EnchantmentHelper.getEnchantments(left), newItem);
 
-                // 이름 적용
                 if (!name.isEmpty()) {
                     newItem.setHoverName(Component.literal(name));
                 }
 
-                // 결과 설정
                 event.setOutput(newItem);
                 event.setCost(recipe.costLevel());
                 event.setMaterialCost(recipe.stack());
@@ -99,4 +92,47 @@ public class AnvilEnchantTransferHandler {
             }
         }
     }
+
+    private static void copyExtraNBT(CompoundTag from, CompoundTag to) {
+        String[] keys = {
+                "extra_damage",
+                "extra_attack_speed",
+                "extra_knockback",
+                "extra_helmet_armor", "extra_chest_armor",
+                "extra_leggings_armor", "extra_boots_armor",
+                "extra_health", "extra_knockback_resistance",
+                "extra_toughness", "extra_move_speed", "extra_luck"
+        };
+
+        for (String key : keys) {
+            if (from.contains(key)) {
+                to.put(key, from.get(key).copy());
+            }
+        }
+    }
+
+
+    private static void applyTierUpgradeEffects(net.minecraft.world.item.Item resultItem, CompoundTag tag, int level) {
+        UpgradeConfigManager.getConfig(resultItem).ifPresent(config -> {
+            config.effects.forEach((effect, value) -> {
+                double scaled = Math.round(value * level * 100.0) / 100.0;
+
+                switch (effect) {
+                    case "damage_per_level"       -> tag.putDouble("extra_damage", scaled);
+                    case "attack_spd_level"       -> tag.putDouble("extra_attack_speed", scaled);
+                    case "knockback_level"        -> tag.putDouble("extra_knockback", scaled);
+                    case "helmet_armor"           -> tag.putDouble("extra_helmet_armor", scaled);
+                    case "chest_armor"            -> tag.putDouble("extra_chest_armor", scaled);
+                    case "leggings_armor"         -> tag.putDouble("extra_leggings_armor", scaled);
+                    case "boots_armor"            -> tag.putDouble("extra_boots_armor", scaled);
+                    case "health_bonus"           -> tag.putDouble("extra_health", scaled);
+                    case "resist_knockback"       -> tag.putDouble("extra_knockback_resistance", scaled);
+                    case "toughness_bonus"        -> tag.putDouble("extra_toughness", scaled);
+                    case "move_speed_bonus"       -> tag.putDouble("extra_move_speed", scaled);
+                    case "luck_bonus"             -> tag.putDouble("extra_luck", scaled);
+                }
+            });
+        });
+    }
+
 }
