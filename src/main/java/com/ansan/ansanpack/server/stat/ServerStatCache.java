@@ -12,7 +12,7 @@ public class ServerStatCache {
     }
 
     public static PlayerStat get(UUID uuid) {
-        return CACHE.getOrDefault(uuid, new PlayerStat()); // 없는 경우 기본값
+        return CACHE.getOrDefault(uuid, new PlayerStat(0, 0, 0, 0, 0)); // 없는 경우 기본값
     }
 
     public static void remove(UUID uuid) {

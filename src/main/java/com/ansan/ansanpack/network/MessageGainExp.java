@@ -8,18 +8,18 @@ import java.util.function.Supplier;
 
 public class MessageGainExp {
 
-    private final int amount;
+    private final double amount;
 
-    public MessageGainExp(int amount) {
+    public MessageGainExp(double amount) {
         this.amount = amount;
     }
 
     public static void encode(MessageGainExp msg, FriendlyByteBuf buf) {
-        buf.writeInt(msg.amount);
+        buf.writeDouble(msg.amount);
     }
 
     public static MessageGainExp decode(FriendlyByteBuf buf) {
-        return new MessageGainExp(buf.readInt());
+        return new MessageGainExp(buf.readDouble());
     }
 
     public static void handle(MessageGainExp msg, Supplier<NetworkEvent.Context> ctx) {

@@ -10,20 +10,20 @@ import java.util.function.Supplier;
 public class MessageRequestSaveLevel {
 
     private final int level;
-    private final int exp;
+    private final double exp;
 
-    public MessageRequestSaveLevel(int level, int exp) {
+    public MessageRequestSaveLevel(int level, double exp) {
         this.level = level;
         this.exp = exp;
     }
 
     public static void encode(MessageRequestSaveLevel msg, FriendlyByteBuf buf) {
         buf.writeInt(msg.level);
-        buf.writeInt(msg.exp);
+        buf.writeDouble(msg.exp);
     }
 
     public static MessageRequestSaveLevel decode(FriendlyByteBuf buf) {
-        return new MessageRequestSaveLevel(buf.readInt(), buf.readInt());
+        return new MessageRequestSaveLevel(buf.readInt(), buf.readDouble());
     }
 
     public static void handle(MessageRequestSaveLevel msg, Supplier<NetworkEvent.Context> ctx) {

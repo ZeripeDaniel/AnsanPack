@@ -10,6 +10,7 @@ import com.ansan.ansanpack.network.*;
 import com.ansan.ansanpack.gui.UpgradeContainer;
 import com.ansan.ansanpack.item.ModCreativeTabs;
 import com.ansan.ansanpack.item.ModItems;
+import com.ansan.ansanpack.sound.ModSoundEvents;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
@@ -65,6 +66,7 @@ public class AnsanPack {
         MENUS.register(modEventBus);
 
 
+
         // Register CoinInteractionHandler to the Forge event bus
         MinecraftForge.EVENT_BUS.register(new CoinInteractionHandler());
         MinecraftForge.EVENT_BUS.register(new EntityAttributeModifier());
@@ -113,6 +115,7 @@ public class AnsanPack {
         AddEffectCommand.register(event.getDispatcher());
         CheckEffectsCommand.register(event.getDispatcher());
         RankingCommand.register(event.getDispatcher());
+        DebugStatExpCommand.register(event.getDispatcher());
     }
     private void commonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
@@ -205,10 +208,30 @@ public class AnsanPack {
                     MessageSyncStats::decode,
                     MessageSyncStats::handle
             );
+            AnsanPack.NETWORK.registerMessage(packetId++,
+                    MessageRequestMoneyOnly.class,
+                    MessageRequestMoneyOnly::encode,
+                    MessageRequestMoneyOnly::decode,
+                    MessageRequestMoneyOnly::handle
+            );
+
+            AnsanPack.NETWORK.registerMessage(packetId++,
+                    MessageSyncMoneyOnly.class,
+                    MessageSyncMoneyOnly::encode,
+                    MessageSyncMoneyOnly::decode,
+                    MessageSyncMoneyOnly::handle
+            );
+            AnsanPack.NETWORK.registerMessage(packetId++,
+                    MessageLevelUpNotify.class,
+                    MessageLevelUpNotify::encode,
+                    MessageLevelUpNotify::decode,
+                    MessageLevelUpNotify::handle);
 
         });
     }
     private void clientSetup(final FMLClientSetupEvent event) {
         MenuScreens.register(UPGRADE_CONTAINER.get(), UpgradeScreen::new);
+        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
+        ModSoundEvents.SOUND_EVENTS.register(modEventBus);
     }
 }

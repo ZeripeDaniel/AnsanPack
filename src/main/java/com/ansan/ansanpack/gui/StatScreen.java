@@ -1,6 +1,8 @@
 package com.ansan.ansanpack.gui;
 
+import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.client.level.LocalPlayerStatData;
+import com.ansan.ansanpack.network.MessageRequestSaveStats;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -11,6 +13,8 @@ import net.minecraft.network.chat.Component;
  * 스탯 분배 화면 (= 키로 열림)
  */
 public class StatScreen extends Screen {
+
+    private Button strBtn, agiBtn, intBtn, luckBtn;
 
     public StatScreen() {
         super(Component.literal("스탯 분배"));
@@ -29,30 +33,60 @@ public class StatScreen extends Screen {
 
         LocalPlayerStatData data = LocalPlayerStatData.INSTANCE;
 
-        this.addRenderableWidget(Button.builder(
+        // 힘 버튼
+        strBtn = Button.builder(
                 Component.literal("힘: " + data.getStat("str") + " [+]"),
-                btn -> data.gainPoint("str")
-        ).pos(centerX - 60, startY).size(120, 20).build());
+                btn -> {
+                    data.gainPoint("str");
+                    updateButtonTexts(); // 👈 텍스트 갱신
+                }
+        ).pos(centerX - 60, startY).size(120, 20).build();
+        this.addRenderableWidget(strBtn);
 
-        this.addRenderableWidget(Button.builder(
+        // 민첩 버튼
+        agiBtn = Button.builder(
                 Component.literal("민첩: " + data.getStat("agi") + " [+]"),
-                btn -> data.gainPoint("agi")
-        ).pos(centerX - 60, startY + 25).size(120, 20).build());
+                btn -> {
+                    data.gainPoint("agi");
+                    updateButtonTexts();
+                }
+        ).pos(centerX - 60, startY + 25).size(120, 20).build();
+        this.addRenderableWidget(agiBtn);
 
-        this.addRenderableWidget(Button.builder(
+        // 지능 버튼
+        intBtn = Button.builder(
                 Component.literal("지능: " + data.getStat("int") + " [+]"),
-                btn -> data.gainPoint("int")
-        ).pos(centerX - 60, startY + 50).size(120, 20).build());
+                btn -> {
+                    data.gainPoint("int");
+                    updateButtonTexts();
+                }
+        ).pos(centerX - 60, startY + 50).size(120, 20).build();
+        this.addRenderableWidget(intBtn);
 
-        this.addRenderableWidget(Button.builder(
+        // 행운 버튼
+        luckBtn = Button.builder(
                 Component.literal("행운: " + data.getStat("luck") + " [+]"),
-                btn -> data.gainPoint("luck")
-        ).pos(centerX - 60, startY + 75).size(120, 20).build());
+                btn -> {
+                    data.gainPoint("luck");
+                    updateButtonTexts();
+                }
+        ).pos(centerX - 60, startY + 75).size(120, 20).build();
+        this.addRenderableWidget(luckBtn);
 
+        // 닫기 버튼
         this.addRenderableWidget(Button.builder(
                 Component.literal("닫기"),
                 btn -> this.onClose()
         ).pos(centerX - 30, startY + 110).size(60, 20).build());
+    }
+
+    private void updateButtonTexts() {
+        LocalPlayerStatData data = LocalPlayerStatData.INSTANCE;
+
+        strBtn.setMessage(Component.literal("힘: " + data.getStat("str") + " [+]"));
+        agiBtn.setMessage(Component.literal("민첩: " + data.getStat("agi") + " [+]"));
+        intBtn.setMessage(Component.literal("지능: " + data.getStat("int") + " [+]"));
+        luckBtn.setMessage(Component.literal("행운: " + data.getStat("luck") + " [+]"));
     }
 
     @Override
@@ -70,5 +104,20 @@ public class StatScreen extends Screen {
         graphics.drawCenteredString(this.font, "남은 AP: " + ap, centerX, topY + 12, 0xFFFF00);
 
         super.render(graphics, mouseX, mouseY, partialTick);
+    }
+
+    @Override
+    public void onClose() {
+        super.onClose();
+
+        LocalPlayerStatData stat = LocalPlayerStatData.INSTANCE;
+        MessageRequestSaveStats packet = new MessageRequestSaveStats(
+                stat.getStat("str"),
+                stat.getStat("agi"),
+                stat.getStat("int"),
+                stat.getStat("luck"),
+                stat.getAvailableAP()
+        );
+        AnsanPack.NETWORK.sendToServer(packet);
     }
 }

@@ -80,7 +80,7 @@ public class MissionEventDispatcher {
 
                 // 🔧 여기 수정: "entity_id" → "entity_type"
                 if ("entity_type".equals(cond.key) && "eq".equals(cond.comparison)) {
-                    AnsanPack.LOGGER.info("[미션 디버그] 비교 대상: killedEntityId='{}', condition.value='{}'", killedEntityId, cond.value);
+                    //AnsanPack.LOGGER.info("[미션 디버그] 비교 대상: killedEntityId='{}', condition.value='{}'", killedEntityId, cond.value);
 
                     if (!killedEntityId.equals(cond.value)) {
                         match = false;

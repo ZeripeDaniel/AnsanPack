@@ -38,7 +38,7 @@ public class DebugStatExpCommand {
                 Commands.literal("경험치추가")
                         .then(Commands.argument("amount", IntegerArgumentType.integer(1))
                                 .executes(ctx -> {
-                                    int amount = IntegerArgumentType.getInteger(ctx, "amount");
+                                    double amount = IntegerArgumentType.getInteger(ctx, "amount");
                                     LocalPlayerLevelData.INSTANCE.addExp(amount);
 
                                     ctx.getSource().sendSystemMessage(Component.literal("경험치 +" + amount));

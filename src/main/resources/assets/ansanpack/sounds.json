@@ -1,0 +1,12 @@
+{
+  "level_up": {
+    "category": "player",
+    "sounds": [
+      {
+        "name": "ansanpack:level/level_up",
+        "volume": 1.0,
+        "pitch": 1.0
+      }
+    ]
+  }
+}

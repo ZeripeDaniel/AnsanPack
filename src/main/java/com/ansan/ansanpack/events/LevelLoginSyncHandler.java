@@ -17,7 +17,7 @@ public class LevelLoginSyncHandler {
 
         LevelDatabaseManager.load(player.getUUID(), (level, exp) -> {
             if (level < 1) level = 1;
-            if (exp < 0) exp = 0;
+            if (exp < 0) exp = (double) 0;
 
             AnsanPack.NETWORK.sendTo(
                     new MessageInitLevel(level, exp),

@@ -17,7 +17,7 @@ import net.minecraft.world.item.Tiers;
 import com.ansan.ansanpack.network.MessageGainExp;
 import com.ansan.ansanpack.AnsanPack;
 
-@Mod.EventBusSubscriber(modid = "ansanpack", bus = Mod.EventBusSubscriber.Bus.FORGE)
+@Mod.EventBusSubscriber(modid = AnsanPack.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class BlockBreakExpHandler {
     @SubscribeEvent
     public static void onBlockBreak(BlockEvent.BreakEvent event) {
@@ -32,7 +32,7 @@ public class BlockBreakExpHandler {
         if (!state.requiresCorrectToolForDrops()) return;
         if (block == Blocks.DIRT || block == Blocks.GRASS_BLOCK || block == Blocks.OAK_LEAVES) return;
 
-        int gain = 2;
+        double gain = 2;
 
         // 서버 → 클라이언트로 경험치 부여 패킷 전송
         AnsanPack.NETWORK.sendTo(new MessageGainExp(gain), player.connection.connection, net.minecraftforge.network.NetworkDirection.PLAY_TO_CLIENT);

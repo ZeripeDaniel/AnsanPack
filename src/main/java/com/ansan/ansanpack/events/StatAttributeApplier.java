@@ -1,5 +1,6 @@
 package com.ansan.ansanpack.events;
 
+import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.client.level.LocalPlayerStatData;
 import com.ansan.ansanpack.server.stat.PlayerStat;
 import com.ansan.ansanpack.server.stat.ServerStatCache;
@@ -13,7 +14,7 @@ import net.minecraftforge.fml.common.Mod;
 
 import java.util.UUID;
 
-@Mod.EventBusSubscriber(modid = "ansanpack")
+@Mod.EventBusSubscriber(modid = AnsanPack.MODID)
 public class StatAttributeApplier {
 
     private static final UUID STR_UUID = UUID.fromString("e1a3b171-11a1-4d9f-82e2-b76adbb52f4b");

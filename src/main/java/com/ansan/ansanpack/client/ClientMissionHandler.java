@@ -16,7 +16,7 @@ import net.minecraftforge.fml.common.Mod;
 
 import java.util.List;
 
-@Mod.EventBusSubscriber(modid = "ansanpack", value = Dist.CLIENT)
+@Mod.EventBusSubscriber(modid = AnsanPack.MODID, value = Dist.CLIENT)
 public class ClientMissionHandler {
 
     private static double totalDistanceMoved = 0.0;

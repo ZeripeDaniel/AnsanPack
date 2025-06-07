@@ -206,9 +206,9 @@ publishing {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8' // Use the UTF-8 charset for Java compilation
-    options.compilerArgs += ["-Xlint:-deprecation", "-Xlint:-unchecked", "-Xlint:removal"]
-    options.warnings = false // Disable all warnings
+    options.encoding = 'UTF-8'
+    options.compilerArgs += ["-Xlint:-deprecation", "-Xlint:-unchecked", "-Xlint:-removal"]
+    options.warnings = false
 }
 
 tasks.withType(JavaExec).configureEach {
