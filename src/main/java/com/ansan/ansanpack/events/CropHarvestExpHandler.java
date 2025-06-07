@@ -2,12 +2,11 @@ package com.ansan.ansanpack.events;
 
 import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.network.MessageGainExp;
-import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.level.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.NetworkDirection;
@@ -16,17 +15,20 @@ import net.minecraftforge.network.NetworkDirection;
 public class CropHarvestExpHandler {
 
     @SubscribeEvent
-    public static void onCropRightClick(PlayerInteractEvent.RightClickBlock event) {
-        if (!(event.getEntity() instanceof ServerPlayer player)) return;
+    public static void onCropBroken(BlockEvent.BreakEvent event) {
+        if (!(event.getPlayer() instanceof ServerPlayer player)) return;
+        if (player.level().isClientSide) return;
 
-        BlockPos pos = event.getPos();
-        BlockState state = player.level().getBlockState(pos);
+        BlockState state = event.getState();
         Block block = state.getBlock();
 
-        if (block instanceof CropBlock crop) {
-            if (crop.isMaxAge(state)) {
-                AnsanPack.NETWORK.sendTo(new MessageGainExp(2), player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
-            }
+        // ✅ CropBlock이고 최대 성장 상태일 때만 경험치 지급
+        if (block instanceof CropBlock crop && crop.isMaxAge(state)) {
+            AnsanPack.NETWORK.sendTo(
+                    new MessageGainExp(0.33),
+                    player.connection.connection,
+                    NetworkDirection.PLAY_TO_CLIENT
+            );
         }
     }
 }

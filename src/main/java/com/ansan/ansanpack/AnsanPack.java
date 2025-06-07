@@ -78,6 +78,7 @@ public class AnsanPack {
 
         MinecraftForge.EVENT_BUS.register(new MobDropEventHandler());
         MinecraftForge.EVENT_BUS.register(this);
+        ModSoundEvents.SOUND_EVENTS.register(modEventBus);
     }
     private void setup(final FMLCommonSetupEvent event) {
         if (FMLEnvironment.dist.isDedicatedServer()) {
@@ -231,7 +232,6 @@ public class AnsanPack {
     }
     private void clientSetup(final FMLClientSetupEvent event) {
         MenuScreens.register(UPGRADE_CONTAINER.get(), UpgradeScreen::new);
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        ModSoundEvents.SOUND_EVENTS.register(modEventBus);
+
     }
 }

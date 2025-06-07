@@ -1,7 +1,9 @@
 package com.ansan.ansanpack.gui;
 
 import com.ansan.ansanpack.AnsanPack;
+import com.ansan.ansanpack.client.level.LocalPlayerLevelData;
 import com.ansan.ansanpack.client.level.LocalPlayerStatData;
+import com.ansan.ansanpack.network.MessageRequestSaveLevel;
 import com.ansan.ansanpack.network.MessageRequestSaveStats;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -110,14 +112,17 @@ public class StatScreen extends Screen {
     public void onClose() {
         super.onClose();
 
-        LocalPlayerStatData stat = LocalPlayerStatData.INSTANCE;
-        MessageRequestSaveStats packet = new MessageRequestSaveStats(
-                stat.getStat("str"),
-                stat.getStat("agi"),
-                stat.getStat("int"),
-                stat.getStat("luck"),
-                stat.getAvailableAP()
-        );
-        AnsanPack.NETWORK.sendToServer(packet);
+
+        int level = LocalPlayerLevelData.INSTANCE.getLevel();
+        double exp = LocalPlayerLevelData.INSTANCE.getExp();
+
+        AnsanPack.NETWORK.sendToServer(new MessageRequestSaveLevel(level, exp));
+        AnsanPack.NETWORK.sendToServer(new MessageRequestSaveStats(
+                LocalPlayerStatData.INSTANCE.getStat("str"),
+                LocalPlayerStatData.INSTANCE.getStat("agi"),
+                LocalPlayerStatData.INSTANCE.getStat("int"),
+                LocalPlayerStatData.INSTANCE.getStat("luck"),
+                LocalPlayerStatData.INSTANCE.getAvailableAP()
+        ));
     }
 }

@@ -39,7 +39,7 @@ public class StatAttributeApplier {
         applyModifier(attrMap.getInstance(Attributes.MOVEMENT_SPEED), AGI_UUID, "stat.agi", agi);
 
         // 행운 → generic.luck
-        double luck = stat.getLuck();;
+        double luck = stat.getLuck() * 0.25;
         applyModifier(attrMap.getInstance(Attributes.LUCK), LUCK_UUID, "stat.luck", luck);
     }
 

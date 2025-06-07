@@ -4,6 +4,8 @@ import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.client.level.LocalPlayerStatData;
 import com.ansan.ansanpack.config.StatDatabaseManager;
 import com.ansan.ansanpack.network.MessageSyncStats;
+import com.ansan.ansanpack.server.stat.PlayerStat;
+import com.ansan.ansanpack.server.stat.ServerStatCache;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -17,18 +19,25 @@ public class StatLoginSyncHandler {
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
 
-        StatDatabaseManager.loadStats(player.getUUID());
+        // ✅ DB에서 불러오기 (없으면 기본값으로 채워짐)
+        PlayerStat stat = StatDatabaseManager.loadStats(player.getUUID());
 
-        int str = LocalPlayerStatData.INSTANCE.getStat("str");
-        int agi = LocalPlayerStatData.INSTANCE.getStat("agi");
-        int intel = LocalPlayerStatData.INSTANCE.getStat("int");
-        int luck = LocalPlayerStatData.INSTANCE.getStat("luck");
-        int ap = LocalPlayerStatData.INSTANCE.getAvailableAP();
+        // ✅ 서버 캐시에 저장
+        ServerStatCache.update(player.getUUID(), stat);
 
+        // ✅ 클라이언트로 동기화
         AnsanPack.NETWORK.sendTo(
-                new MessageSyncStats(str, agi, intel, luck, ap),
+                new MessageSyncStats(
+                        stat.getStrength(),
+                        stat.getAgility(),
+                        stat.getIntelligence(),
+                        stat.getLuck(),
+                        stat.getAvailableAP()
+                ),
                 player.connection.connection,
                 NetworkDirection.PLAY_TO_CLIENT
         );
     }
+
+
 }

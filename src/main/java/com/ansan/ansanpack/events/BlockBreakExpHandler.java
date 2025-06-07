@@ -32,7 +32,7 @@ public class BlockBreakExpHandler {
         if (!state.requiresCorrectToolForDrops()) return;
         if (block == Blocks.DIRT || block == Blocks.GRASS_BLOCK || block == Blocks.OAK_LEAVES) return;
 
-        double gain = 2;
+        double gain = 0.01;
 
         // 서버 → 클라이언트로 경험치 부여 패킷 전송
         AnsanPack.NETWORK.sendTo(new MessageGainExp(gain), player.connection.connection, net.minecraftforge.network.NetworkDirection.PLAY_TO_CLIENT);

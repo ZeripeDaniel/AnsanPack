@@ -23,7 +23,7 @@ import java.util.Properties;
 
 public class AnvilRecipeRegisterCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("모루등록")
+        dispatcher.register(Commands.literal("anvilregister")
                 .requires(source -> source.hasPermission(2))
                 .then(Commands.argument("insert_item", StringArgumentType.word())
                         .suggests(ITEM_ID_SUGGESTIONS)

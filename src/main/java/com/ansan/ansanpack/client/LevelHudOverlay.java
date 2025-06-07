@@ -3,8 +3,11 @@ package com.ansan.ansanpack.client;
 import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.client.level.LocalPlayerCardData;
 import com.ansan.ansanpack.client.level.LocalPlayerLevelData;
+import com.ansan.ansanpack.client.level.LocalPlayerStatData;
 import com.ansan.ansanpack.gui.StatScreen;
 import com.ansan.ansanpack.network.MessageRequestMoneyOnly;
+import com.ansan.ansanpack.network.MessageRequestSaveLevel;
+import com.ansan.ansanpack.network.MessageRequestSaveStats;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
@@ -47,6 +50,18 @@ public class LevelHudOverlay {
             Minecraft.getInstance().player.displayClientMessage(Component.literal(msg), true);
             if (state != HudState.OFF) {
                 AnsanPack.NETWORK.sendToServer(new MessageRequestMoneyOnly());
+
+                int level = LocalPlayerLevelData.INSTANCE.getLevel();
+                double exp = LocalPlayerLevelData.INSTANCE.getExp();
+
+                AnsanPack.NETWORK.sendToServer(new MessageRequestSaveLevel(level, exp));
+                AnsanPack.NETWORK.sendToServer(new MessageRequestSaveStats(
+                        LocalPlayerStatData.INSTANCE.getStat("str"),
+                        LocalPlayerStatData.INSTANCE.getStat("agi"),
+                        LocalPlayerStatData.INSTANCE.getStat("int"),
+                        LocalPlayerStatData.INSTANCE.getStat("luck"),
+                        LocalPlayerStatData.INSTANCE.getAvailableAP()
+                ));
             }
         }
 
@@ -80,19 +95,20 @@ public class LevelHudOverlay {
 
         // 경험치 시각적 표현
         double exp = LocalPlayerLevelData.INSTANCE.getExp();
-        double maxExp = 100 + (LocalPlayerLevelData.INSTANCE.getLevel() * 20);
+        double maxExp = LocalPlayerLevelData.INSTANCE.getExpToNextLevel(); // ✅ 고정값으로
         double ratio = exp / maxExp;
         int barWidth = 90;
-        int barHeight = 6;
+        int barHeight = 4;
         int barX = x + 20;
-        int barY = y + 45;
+        int barY = y + 41;
 
-        // 바 배경
+// 바 배경
         gui.fill(barX, barY, barX + barWidth, barY + barHeight, 0xFF333333);
-        // 바 채움
+// 바 채움
         gui.fill(barX, barY, barX + (int) (barWidth * ratio), barY + barHeight, 0xFF00FF00);
-        // 수치 표시
-        gui.drawString(mc.font, String.format("%.0f / %.0f", exp, maxExp), barX, barY + 8, 0xAAAAAA);
+// 수치 표시
+        gui.drawString(mc.font, String.format("%.3f / %.3f", exp, maxExp), barX, barY + 7, 0xAAAAAA);
+
     }
 
     private static int getScore(LocalPlayer player) {

@@ -19,7 +19,7 @@ public class LevelTickHandler {
     private static int tickCounter = 0;
     private static int money_tickCounter = 0;
     private static final int SAVE_INTERVAL_TICKS = 20 * 60 * 3; // 3분
-    private static final int MONEY_SAVE_INTERVAL_TICKS = 20 * 5; // 5초
+    private static final int MONEY_SAVE_INTERVAL_TICKS = 20 * 10; // 5초
 
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent event) {
@@ -45,13 +45,30 @@ public class LevelTickHandler {
             ));
 
             //AnsanPack.LOGGER.warn("[AutoSave] level={}, exp={}", level, exp);
-            AnsanPack.LOGGER.warn("[AutoSave] 어어 클라에서 보낸다 보내레벨스탯다보낸다 level:" + level + " exp : " + exp);
+            AnsanPack.LOGGER.warn("[AutoSave] 어어 클라에서 보낸다 보내레벨스탯다보낸다 level:" + level + " exp : " + exp +
+                    "str" + LocalPlayerStatData.INSTANCE.getStat("str") +
+                    "agi" + LocalPlayerStatData.INSTANCE.getStat("agi") +
+                    "int" + LocalPlayerStatData.INSTANCE.getStat("int") +
+                    "luck" + LocalPlayerStatData.INSTANCE.getStat("luck") + "AP" + LocalPlayerStatData.INSTANCE.getAvailableAP()
+            );
         }
 
         // 5초마다 요청하고 싶다면:
         if (money_tickCounter >= MONEY_SAVE_INTERVAL_TICKS) {
             money_tickCounter = 0;
             AnsanPack.NETWORK.sendToServer(new MessageRequestMoneyOnly());
+            int level = LocalPlayerLevelData.INSTANCE.getLevel();
+            double exp = LocalPlayerLevelData.INSTANCE.getExp();
+            double maxExp = LocalPlayerLevelData.INSTANCE.getExpToNextLevel();
+
+            int str = LocalPlayerStatData.INSTANCE.getStat("str");
+            int agi = LocalPlayerStatData.INSTANCE.getStat("agi");
+            int intel = LocalPlayerStatData.INSTANCE.getStat("int");
+            int luck = LocalPlayerStatData.INSTANCE.getStat("luck");
+            int ap = LocalPlayerStatData.INSTANCE.getAvailableAP();
+
+            AnsanPack.LOGGER.info("[머니][레벨 상태] LV.{} | EXP: {:.3f} / {:.3f}", level, exp, maxExp);
+            AnsanPack.LOGGER.info("[머니][스탯 상태] 힘: {}, 민첩: {}, 지능: {}, 행운: {}, AP: {}", str, agi, intel, luck, ap);
         }
 
     }

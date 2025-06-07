@@ -42,11 +42,18 @@ public class LevelDatabaseManager {
                 stmt.setString(2, playerName);
                 stmt.setInt(3, level);
                 stmt.setDouble(4, exp);
-                stmt.executeUpdate();
+                int result = stmt.executeUpdate();
+                if (result > 0) {
+                    AnsanPack.LOGGER.info("[DB] 저장 성공: {} (Lv: {}, Exp: {}, RowsAffected: {})",
+                            playerName, level, exp, result);
+                } else {
+                    AnsanPack.LOGGER.warn("[DB] 저장 시도했으나 변경된 행 없음 → {}", playerName);
+                }
             }
+            AnsanPack.LOGGER.info("[LevelSave] 저장 성공: {} (Lv: {}, Exp: {})", playerName, level, exp);
 
         } catch (SQLException e) {
-            AnsanPack.LOGGER.error("[LevelDB] 레벨 저장 실패: {}", e.getMessage());
+            AnsanPack.LOGGER.info("[LevelDB] 레벨 저장 실패: {}", e.getMessage());
         }
     }
 
@@ -65,12 +72,16 @@ public class LevelDatabaseManager {
                     int level = rs.getInt("level");
                     double exp = rs.getDouble("exp");  // ✅ 변경
                     callback.accept(level, exp);
+                    AnsanPack.LOGGER.info("[LevelSave] 저장 성공: (Lv: {}, Exp: {})", level, exp);
                 } else {
                     callback.accept(1, 0.0); // 기본값
+                    AnsanPack.LOGGER.info("[LevelSave] 여길 왜들어옴? 기본값에?");
                 }
+
             }
+
         } catch (SQLException e) {
-            AnsanPack.LOGGER.error("[LevelDB] 레벨 불러오기 실패: {}", e.getMessage());
+            AnsanPack.LOGGER.info("[LevelDB] 레벨 불러오기 실패: {}", e.getMessage());
             callback.accept(1, 0.0); // 실패 시 기본값
         }
     }

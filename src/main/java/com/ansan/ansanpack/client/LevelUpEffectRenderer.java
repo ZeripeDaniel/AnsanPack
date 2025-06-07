@@ -14,7 +14,7 @@ public class LevelUpEffectRenderer {
 
     private static final ResourceLocation LEVEL_UP_IMAGE = new ResourceLocation(AnsanPack.MODID, "textures/gui/level_up.png");
 
-    private static final long DISPLAY_DURATION_MS = 4000; // 4초 지속
+    private static final long DISPLAY_DURATION_MS = 3000; // 4초 지속
     private static long displayStartTime = -1;
 
     public static void trigger() {
