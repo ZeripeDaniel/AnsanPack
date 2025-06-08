@@ -117,8 +117,10 @@ public class AnsanPack {
         CheckEffectsCommand.register(event.getDispatcher());
         RankingCommand.register(event.getDispatcher());
         DebugStatExpCommand.register(event.getDispatcher());
+        RefreshUpgradeCommand.register(event.getDispatcher());
     }
     private void commonSetup(final FMLCommonSetupEvent event) {
+
         event.enqueueWork(() -> {
             int packetId = 0;
 
@@ -226,9 +228,11 @@ public class AnsanPack {
                     MessageLevelUpNotify.class,
                     MessageLevelUpNotify::encode,
                     MessageLevelUpNotify::decode,
-                    MessageLevelUpNotify::handle);
+                    MessageLevelUpNotify::handle
+            );
 
         });
+
     }
     private void clientSetup(final FMLClientSetupEvent event) {
         MenuScreens.register(UPGRADE_CONTAINER.get(), UpgradeScreen::new);

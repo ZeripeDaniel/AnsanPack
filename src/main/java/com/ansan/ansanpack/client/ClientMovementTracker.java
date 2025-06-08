@@ -51,10 +51,14 @@ public class ClientMovementTracker {
 
     @SubscribeEvent
     public static void onScreenOpened(ScreenEvent.Opening event) {
+        // ✅ world/플레이어 준비 안 되면 전송하지 않음
+        if (Minecraft.getInstance().player == null || Minecraft.getInstance().level == null) return;
+
         if (accumulatedDistance < 1.0) return;
         int moved = consumeMovedDistance();
         if (moved > 0) {
             AnsanPack.NETWORK.sendToServer(new MessageSyncMoveDistance(moved));
         }
     }
+
 }

@@ -24,6 +24,7 @@ public class ClientMissionHandler {
 
     public static void openFromInfo(List<MessageOpenMissionUI.MissionInfo> infoList, boolean canReset) {
         // GUI 열기 직전: 서버에 이동거리 패킷 전송
+        if (Minecraft.getInstance().player == null || Minecraft.getInstance().level == null) return;
         int moved = consumeMovedDistance();
         if (moved > 0) {
             AnsanPack.NETWORK.sendToServer(new MessageSyncMoveDistance(moved));

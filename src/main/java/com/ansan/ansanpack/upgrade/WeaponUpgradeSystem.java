@@ -47,9 +47,10 @@ public class WeaponUpgradeSystem {
         });
     }
 
-    private static void applyEffects(CompoundTag tag, UpgradeConfigManager.UpgradeConfig config, int level) {
+    public static void applyEffects(CompoundTag tag, UpgradeConfigManager.UpgradeConfig config, int level) {
         config.effects.forEach((effect, value) -> {
-            double total = Math.round(value * level * 100.0) / 100.0;
+            double multiplier = getEffectMultiplier(level); // 💡추가
+            double total = Math.round(value * multiplier * 100.0) / 100.0;
 
             switch(effect) {
                 case "damage_per_level" -> tag.putDouble("extra_damage", total);
@@ -59,6 +60,15 @@ public class WeaponUpgradeSystem {
                 case "boots_armor"      -> tag.putDouble("extra_boots_armor", total);
             }
         });
+    }
+
+    public static double getEffectMultiplier(int level) {
+        if (level == 15) return 4.5;
+        if (level == 14) return 3.5;
+        if (level == 13) return 3.2;
+        if (level >= 11) return 3.0;  // 11~13강
+        if (level >= 6) return 2.0;    // 6~10강
+        return 1.0;                    // 1~5강
     }
 
     public static boolean tryUpgrade(ItemStack weapon, ItemStack stone) {

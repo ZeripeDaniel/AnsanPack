@@ -24,7 +24,7 @@ public class LevelTickHandler {
     @SubscribeEvent
     public static void onClientTick(ClientTickEvent event) {
         if (event.phase != ClientTickEvent.Phase.END) return;
-        if (Minecraft.getInstance().player == null) return;
+        if (Minecraft.getInstance().player == null || Minecraft.getInstance().level == null) return;
 
         tickCounter++;
         money_tickCounter++;

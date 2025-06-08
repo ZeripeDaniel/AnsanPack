@@ -1,5 +1,6 @@
 package com.ansan.ansanpack.config;
 
+import com.ansan.ansanpack.AnsanPack;
 import com.google.gson.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -79,7 +80,7 @@ public class UpgradeConfigManager {
                     writer.write("db.user=root\n");
                     writer.write("db.password=your_password\n");
                 }
-                System.out.println("[AnsanPack] MySQL 설정파일 생성됨: " + configPath);
+                AnsanPack.LOGGER.debug("[AnsanPack] MySQL 설정파일 생성됨: " + configPath);
             } catch (IOException e) {
                 throw new RuntimeException("MySQL 설정파일 생성 실패: " + configPath, e);
             }

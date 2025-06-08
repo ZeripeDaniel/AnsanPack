@@ -49,7 +49,8 @@ public class UpgradeSystemEventHandler {
     }
 
     private static void applyEffect(ItemAttributeModifierEvent event, ItemStack stack, String effect, double bonus, int level, EquipmentSlot slot) {
-        double value = Math.round(bonus * level * 100) / 100.0;
+        double multiplier = WeaponUpgradeSystem.getEffectMultiplier(level);
+        double value = Math.round(bonus * multiplier * 100) / 100.0;
 
         boolean isArmor = stack.getItem() instanceof ArmorItem armor;
         boolean isMainOrOffHand = slot == EquipmentSlot.MAINHAND || slot == EquipmentSlot.OFFHAND;

@@ -1,5 +1,6 @@
 package com.ansan.ansanpack.command;
 
+import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.config.UpgradeConfigManager;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
