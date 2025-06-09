@@ -1,7 +1,6 @@
 package com.ansan.ansanpack.config;
 
 import com.ansan.ansanpack.AnsanPack;
-import com.google.gson.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -16,12 +15,22 @@ import java.util.*;
 public class UpgradeConfigManager {
     private static final Map<ResourceLocation, UpgradeConfig> ITEM_CONFIGS = new HashMap<>();
 
+    public static class EffectEntry {
+        public final double value;
+        public final int applyLevel;
+
+        public EffectEntry(double value, int applyLevel) {
+            this.value = value;
+            this.applyLevel = applyLevel;
+        }
+    }
+
     public static class UpgradeConfig {
         public final ResourceLocation item;
         public final int maxLevel;
-        public final Map<String, Double> effects;
+        public final Map<String, List<EffectEntry>> effects;
 
-        public UpgradeConfig(ResourceLocation item, int maxLevel, Map<String, Double> effects) {
+        public UpgradeConfig(ResourceLocation item, int maxLevel, Map<String, List<EffectEntry>> effects) {
             this.item = item;
             this.maxLevel = maxLevel;
             this.effects = effects;
@@ -47,12 +56,15 @@ public class UpgradeConfigManager {
                 ResourceLocation itemId = new ResourceLocation(rs.getString("item_id"));
                 int maxLevel = rs.getInt("max_level");
 
-                Map<String, Double> effects = new HashMap<>();
-                try (PreparedStatement effectStmt = conn.prepareStatement("SELECT effect_key, effect_value FROM upgrade_effects WHERE item_id = ?")) {
+                Map<String, List<EffectEntry>> effects = new HashMap<>();
+                try (PreparedStatement effectStmt = conn.prepareStatement("SELECT effect_key, effect_value, apply_level FROM upgrade_effects WHERE item_id = ?")) {
                     effectStmt.setString(1, itemId.toString());
                     ResultSet ers = effectStmt.executeQuery();
                     while (ers.next()) {
-                        effects.put(ers.getString("effect_key"), ers.getDouble("effect_value"));
+                        String key = ers.getString("effect_key");
+                        double value = ers.getDouble("effect_value");
+                        int applyLevel = ers.getInt("apply_level");
+                        effects.computeIfAbsent(key, k -> new ArrayList<>()).add(new EffectEntry(value, applyLevel));
                     }
                 }
 
@@ -95,14 +107,6 @@ public class UpgradeConfigManager {
         return props;
     }
 
-    public static double getEffectValue(ResourceLocation itemId, String effectKey) {
-        UpgradeConfig config = ITEM_CONFIGS.get(itemId);
-        if (config != null && config.effects.containsKey(effectKey)) {
-            return config.effects.get(effectKey);
-        }
-        return 0.0;
-    }
-
     public static Optional<UpgradeConfig> getConfig(Item item) {
         ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(item);
         return Optional.ofNullable(ITEM_CONFIGS.get(itemId));
@@ -113,9 +117,14 @@ public class UpgradeConfigManager {
     }
 
     public static double getAnyEffectValue(ResourceLocation itemId, String... effectKeys) {
-        for (String key : effectKeys) {
-            double value = getEffectValue(itemId, key);
-            if (value != 0.0) return value;
+        UpgradeConfig config = ITEM_CONFIGS.get(itemId);
+        if (config != null) {
+            for (String key : effectKeys) {
+                List<EffectEntry> list = config.effects.get(key);
+                if (list != null && !list.isEmpty()) {
+                    return list.get(0).value; // 첫 번째 조건값 반환 (단순 조회용)
+                }
+            }
         }
         return 0.0;
     }

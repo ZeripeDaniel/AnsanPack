@@ -9,6 +9,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.List;
+
 @Mod.EventBusSubscriber(modid = AnsanPack.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class CombatEventHandler {
 
@@ -28,37 +30,45 @@ public class CombatEventHandler {
             float bonusDamage = 0f;
             float knockbackBonus = 0f;
 
-            // 여러 효과 계산
+            // ✅ 효과 중첩 누적 적용
             for (var entry : config.effects.entrySet()) {
                 String effect = entry.getKey();
-                double value = entry.getValue();
-                double scaled = value * level;
+                List<UpgradeConfigManager.EffectEntry> effectList = entry.getValue();
 
-                switch (effect) {
-                    case "damage_per_level" -> bonusDamage += scaled;
-                    case "knockback_level" -> knockbackBonus += scaled;
-                    // 나중에 다른 효과 필요하면 여기에 추가
+                for (var eff : effectList) {
+                    if (level >= eff.applyLevel) {
+                        int start = eff.applyLevel;
+                        int end = level;
+                        double total = 0;
+
+                        for (int lv = start; lv <= end; lv++) {
+                            int fakeLevel = lv - start + 1;  // 착각한 레벨
+                            total += eff.value * WeaponUpgradeSystem.getEffectMultiplier(fakeLevel);
+                        }
+
+
+
+                        switch (effect) {
+                            case "damage_per_level" -> bonusDamage += total;
+                            case "knockback_level" -> knockbackBonus += total;
+                        }
+                    }
                 }
             }
 
-            // 데미지 보정 적용
+            // 🔁 데미지 보정 적용
             if (bonusDamage > 0) {
                 event.setAmount(baseDamage + bonusDamage);
             }
 
-            // 넉백 직접 적용 (LivingHurtEvent 시점에는 applyKnockback 가능)
+            // 🔁 넉백 직접 적용
             if (knockbackBonus > 0) {
                 double strength = knockbackBonus;
                 double x = -Math.sin(Math.toRadians(player.getYRot()));
                 double z = Math.cos(Math.toRadians(player.getYRot()));
                 event.getEntity().knockback(strength, x, z);
             }
-
-            // DEBUG 로그
-//            AnsanPack.LOGGER.info("[전투] {} → {} 데미지: {} + {}, 넉백: {}",
-//                    player.getName().getString(),
-//                    event.getEntity().getName().getString(),
-//                    baseDamage, bonusDamage, knockbackBonus);
         });
     }
+
 }

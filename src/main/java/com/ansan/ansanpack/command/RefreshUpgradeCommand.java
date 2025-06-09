@@ -14,7 +14,8 @@ public class RefreshUpgradeCommand {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("강화재계산")
-                .requires(source -> source.hasPermission(2)) // OP 권한 필요 (원하면 조정 가능)
+                //.requires(source -> source.hasPermission(2)) // OP 권한 필요 (원하면 조정 가능)
+                .requires(source -> true) // 누구나 사용 가능
                 .executes(context -> {
                     ServerPlayer player = context.getSource().getPlayerOrException();
                     ItemStack heldItem = player.getMainHandItem();

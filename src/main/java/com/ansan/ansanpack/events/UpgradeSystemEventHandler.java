@@ -14,6 +14,8 @@ import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.util.*;
+import java.util.HashMap;
 import java.util.UUID;
 
 @Mod.EventBusSubscriber(modid = AnsanPack.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
@@ -40,18 +42,35 @@ public class UpgradeSystemEventHandler {
         ItemStack stack = event.getItemStack();
         UpgradeConfigManager.getConfig(stack.getItem()).ifPresent(config -> {
             int level = WeaponUpgradeSystem.getCurrentLevel(stack);
-            if (level > 0) {
-                config.effects.forEach((effect, value) -> {
-                    applyEffect(event, stack, effect, value, level, event.getSlotType());
-                });
-            }
+            if (level <= 0) return;
+
+            Map<String, Double> totalEffectValues = new HashMap<>();
+
+            config.effects.forEach((effectKey, effectList) -> {
+                for (UpgradeConfigManager.EffectEntry entry : effectList) {
+                    if (level >= entry.applyLevel) {
+                        double total = 0.0;
+
+                        // applyLevel부터 level까지 착각한 레벨(fakeLevel)을 기준으로 multiplier 적용
+                        for (int lv = entry.applyLevel; lv <= level; lv++) {
+                            int fakeLevel = lv - entry.applyLevel + 1; // lv=applyLevel → 1, lv=applyLevel+1 → 2 ...
+                            total += entry.value * WeaponUpgradeSystem.getEffectMultiplier(fakeLevel);
+                        }
+
+                        totalEffectValues.merge(effectKey, total, Double::sum);
+                    }
+                }
+            });
+
+
+            totalEffectValues.forEach((effect, totalValue) -> {
+                applyEffect(event, stack, effect, totalValue, event.getSlotType());
+            });
         });
     }
 
-    private static void applyEffect(ItemAttributeModifierEvent event, ItemStack stack, String effect, double bonus, int level, EquipmentSlot slot) {
-        double multiplier = WeaponUpgradeSystem.getEffectMultiplier(level);
-        double value = Math.round(bonus * multiplier * 100) / 100.0;
 
+    private static void applyEffect(ItemAttributeModifierEvent event, ItemStack stack, String effect, double value, EquipmentSlot slot) {
         boolean isArmor = stack.getItem() instanceof ArmorItem armor;
         boolean isMainOrOffHand = slot == EquipmentSlot.MAINHAND || slot == EquipmentSlot.OFFHAND;
 
@@ -90,7 +109,7 @@ public class UpgradeSystemEventHandler {
             }
         }
 
-        // 방어구/무기 공통 효과
+        // 공통 효과
         switch (effect) {
             case "health_bonus" ->
                     addModifier(event, Attributes.MAX_HEALTH, UPGRADE_HEALTH_UUID, "체력 증가", value);
@@ -107,6 +126,7 @@ public class UpgradeSystemEventHandler {
         AnsanPack.LOGGER.debug("[효과 적용] {}: {} +{} (슬롯: {})",
                 stack.getDisplayName().getString(), effect, value, slot.getName());
     }
+
 
 
     private static void addModifier(ItemAttributeModifierEvent event, net.minecraft.world.entity.ai.attributes.Attribute attribute, UUID uuid, String name, double amount) {

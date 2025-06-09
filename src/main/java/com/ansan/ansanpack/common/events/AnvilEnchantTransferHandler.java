@@ -4,6 +4,7 @@ import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.config.AnvilRecipeManager;
 import com.ansan.ansanpack.config.UpgradeConfigManager;
 import com.ansan.ansanpack.item.ModItems;
+import com.ansan.ansanpack.upgrade.WeaponUpgradeSystem;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
@@ -12,8 +13,10 @@ import net.minecraftforge.event.AnvilUpdateEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
+import java.util.*;
 
 import java.util.List;
+
 
 @Mod.EventBusSubscriber(modid = AnsanPack.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class AnvilEnchantTransferHandler {
@@ -114,25 +117,43 @@ public class AnvilEnchantTransferHandler {
 
     private static void applyTierUpgradeEffects(net.minecraft.world.item.Item resultItem, CompoundTag tag, int level) {
         UpgradeConfigManager.getConfig(resultItem).ifPresent(config -> {
-            config.effects.forEach((effect, value) -> {
-                double scaled = Math.round(value * level * 100.0) / 100.0;
+            Map<String, Double> totalEffectValues = new HashMap<>();
+
+            config.effects.forEach((effectKey, effectList) -> {
+                for (UpgradeConfigManager.EffectEntry entry : effectList) {
+                    if (level >= entry.applyLevel) {
+                        double total = 0.0;
+                        for (int lv = entry.applyLevel; lv <= level; lv++) {
+                            int fakeLevel = lv - entry.applyLevel + 1;
+                            total += entry.value * WeaponUpgradeSystem.getEffectMultiplier(fakeLevel);
+                        }
+
+                        totalEffectValues.merge(effectKey, total, Double::sum);
+                    }
+                }
+            });
+
+            totalEffectValues.forEach((effect, scaled) -> {
+                double rounded = Math.round(scaled * 100.0) / 100.0;
 
                 switch (effect) {
-                    case "damage_per_level"       -> tag.putDouble("extra_damage", scaled);
-                    case "attack_spd_level"       -> tag.putDouble("extra_attack_speed", scaled);
-                    case "knockback_level"        -> tag.putDouble("extra_knockback", scaled);
-                    case "helmet_armor"           -> tag.putDouble("extra_helmet_armor", scaled);
-                    case "chest_armor"            -> tag.putDouble("extra_chest_armor", scaled);
-                    case "leggings_armor"         -> tag.putDouble("extra_leggings_armor", scaled);
-                    case "boots_armor"            -> tag.putDouble("extra_boots_armor", scaled);
-                    case "health_bonus"           -> tag.putDouble("extra_health", scaled);
-                    case "resist_knockback"       -> tag.putDouble("extra_knockback_resistance", scaled);
-                    case "toughness_bonus"        -> tag.putDouble("extra_toughness", scaled);
-                    case "move_speed_bonus"       -> tag.putDouble("extra_move_speed", scaled);
-                    case "luck_bonus"             -> tag.putDouble("extra_luck", scaled);
+                    case "damage_per_level"       -> tag.putDouble("extra_damage", rounded);
+                    case "attack_spd_level"       -> tag.putDouble("extra_attack_speed", rounded);
+                    case "knockback_level"        -> tag.putDouble("extra_knockback", rounded);
+                    case "helmet_armor"           -> tag.putDouble("extra_helmet_armor", rounded);
+                    case "chest_armor"            -> tag.putDouble("extra_chest_armor", rounded);
+                    case "leggings_armor"         -> tag.putDouble("extra_leggings_armor", rounded);
+                    case "boots_armor"            -> tag.putDouble("extra_boots_armor", rounded);
+                    case "health_bonus"           -> tag.putDouble("extra_health", rounded);
+                    case "resist_knockback"       -> tag.putDouble("extra_knockback_resistance", rounded);
+                    case "toughness_bonus"        -> tag.putDouble("extra_toughness", rounded);
+                    case "move_speed_bonus"       -> tag.putDouble("extra_move_speed", rounded);
+                    case "luck_bonus"             -> tag.putDouble("extra_luck", rounded);
                 }
             });
         });
     }
+
+
 
 }

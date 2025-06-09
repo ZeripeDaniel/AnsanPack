@@ -48,19 +48,36 @@ public class WeaponUpgradeSystem {
     }
 
     public static void applyEffects(CompoundTag tag, UpgradeConfigManager.UpgradeConfig config, int level) {
-        config.effects.forEach((effect, value) -> {
-            double multiplier = getEffectMultiplier(level); // 💡추가
-            double total = Math.round(value * multiplier * 100.0) / 100.0;
+        config.effects.forEach((effectKey, effectList) -> {
+            for (UpgradeConfigManager.EffectEntry entry : effectList) {
+                 if (level >= entry.applyLevel) {
+                     double total = 0.0;
+                     for (int lv = entry.applyLevel; lv <= level; lv++) {
+                         int fakeLevel = lv - entry.applyLevel + 1;
+                         total += entry.value * getEffectMultiplier(fakeLevel);
+                     }
+                     double rounded = Math.round(total * 100.0) / 100.0;
 
-            switch(effect) {
-                case "damage_per_level" -> tag.putDouble("extra_damage", total);
-                case "helmet_armor"     -> tag.putDouble("extra_helmet_armor", total);
-                case "chest_armor"      -> tag.putDouble("extra_chest_armor", total);
-                case "leggings_armor"   -> tag.putDouble("extra_leggings_armor", total);
-                case "boots_armor"      -> tag.putDouble("extra_boots_armor", total);
+                    switch (effectKey) {
+                        case "damage_per_level"       -> tag.putDouble("extra_damage", rounded);
+                        case "attack_spd_level"       -> tag.putDouble("extra_attack_speed", rounded);
+                        case "knockback_level"        -> tag.putDouble("extra_knockback", rounded);
+                        case "helmet_armor"           -> tag.putDouble("extra_helmet_armor", rounded);
+                        case "chest_armor"            -> tag.putDouble("extra_chest_armor", rounded);
+                        case "leggings_armor"         -> tag.putDouble("extra_leggings_armor", rounded);
+                        case "boots_armor"            -> tag.putDouble("extra_boots_armor", rounded);
+                        case "health_bonus"           -> tag.putDouble("extra_health", rounded);
+                        case "resist_knockback"       -> tag.putDouble("extra_knockback_resistance", rounded);
+                        case "toughness_bonus"        -> tag.putDouble("extra_toughness", rounded);
+                        case "move_speed_bonus"       -> tag.putDouble("extra_move_speed", rounded);
+                        case "luck_bonus"             -> tag.putDouble("extra_luck", rounded);
+                    }
+                    break;
+                }
             }
         });
     }
+
 
     public static double getEffectMultiplier(int level) {
         if (level == 15) return 4.5;
@@ -107,7 +124,6 @@ public class WeaponUpgradeSystem {
 
         return success;
     }
-
     public static void addUpgradeTooltip(ItemStack stack, List<Component> tooltip) {
         int level = getCurrentLevel(stack);
         ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
@@ -117,7 +133,18 @@ public class WeaponUpgradeSystem {
             tooltip.add(Component.literal("강화 레벨: +" + level).withStyle(ChatFormatting.GOLD));
 
             if (tag.contains("extra_damage")) {
-                tooltip.add(Component.literal("▶ 추가 공격력: +" + tag.getDouble("extra_damage")).withStyle(ChatFormatting.RED));
+                tooltip.add(Component.literal("▶ 추가 공격력: +" + tag.getDouble("extra_damage"))
+                        .withStyle(ChatFormatting.RED));
+            }
+
+            if (tag.contains("extra_attack_speed")) {
+                tooltip.add(Component.literal("▶ 추가 공격 속도: +" + tag.getDouble("extra_attack_speed"))
+                        .withStyle(ChatFormatting.YELLOW));
+            }
+
+            if (tag.contains("extra_knockback")) {
+                tooltip.add(Component.literal("▶ 넉백 증가: +" + tag.getDouble("extra_knockback"))
+                        .withStyle(ChatFormatting.DARK_PURPLE));
             }
 
             if (stack.getItem() instanceof ArmorItem armor) {
@@ -129,11 +156,68 @@ public class WeaponUpgradeSystem {
                     case BOOTS      -> "extra_boots_armor";
                 };
                 if (tag.contains(armorTagKey)) {
-                    tooltip.add(Component.literal("▶ 추가 방어력: +" + tag.getDouble(armorTagKey)).withStyle(ChatFormatting.BLUE));
+                    tooltip.add(Component.literal("▶ 추가 방어력: +" + tag.getDouble(armorTagKey))
+                            .withStyle(ChatFormatting.BLUE));
                 }
+            }
+
+            if (tag.contains("extra_health")) {
+                tooltip.add(Component.literal("▶ 체력 보너스: +" + tag.getDouble("extra_health"))
+                        .withStyle(ChatFormatting.DARK_RED));
+            }
+
+            if (tag.contains("extra_knockback_resistance")) {
+                tooltip.add(Component.literal("▶ 넉백 저항: +" + tag.getDouble("extra_knockback_resistance"))
+                        .withStyle(ChatFormatting.GRAY));
+            }
+
+            if (tag.contains("extra_toughness")) {
+                tooltip.add(Component.literal("▶ 방어 강도: +" + tag.getDouble("extra_toughness"))
+                        .withStyle(ChatFormatting.DARK_AQUA));
+            }
+
+            if (tag.contains("extra_move_speed")) {
+                double raw = tag.getDouble("extra_move_speed");
+                double shown = Math.round(raw * 10000.0 * 100.0) / 100.0; // 소수점 둘째 자리까지
+                tooltip.add(Component.literal("▶ 이동 속도 증가: +" + shown)
+                        .withStyle(ChatFormatting.GREEN));
+            }
+
+            if (tag.contains("extra_luck")) {
+                tooltip.add(Component.literal("▶ 행운: +" + tag.getDouble("extra_luck"))
+                        .withStyle(ChatFormatting.GOLD));
             }
 
             AnsanPack.LOGGER.debug("툴팁 이펙트 값 확인: {} - tag={}", itemId, tag);
         }
     }
+
+//    public static void addUpgradeTooltip(ItemStack stack, List<Component> tooltip) {
+//        int level = getCurrentLevel(stack);
+//        ResourceLocation itemId = ForgeRegistries.ITEMS.getKey(stack.getItem());
+//        CompoundTag tag = stack.getOrCreateTag();
+//
+//        if (level > 0) {
+//            tooltip.add(Component.literal("강화 레벨: +" + level).withStyle(ChatFormatting.GOLD));
+//
+//            if (tag.contains("extra_damage")) {
+//                tooltip.add(Component.literal("▶ 추가 공격력: +" + tag.getDouble("extra_damage")).withStyle(ChatFormatting.RED));
+//            }
+//
+//            if (stack.getItem() instanceof ArmorItem armor) {
+//                ArmorItem.Type armorType = armor.getType();
+//                String armorTagKey = switch (armorType) {
+//                    case HELMET     -> "extra_helmet_armor";
+//                    case CHESTPLATE -> "extra_chest_armor";
+//                    case LEGGINGS   -> "extra_leggings_armor";
+//                    case BOOTS      -> "extra_boots_armor";
+//                };
+//                if (tag.contains(armorTagKey)) {
+//                    tooltip.add(Component.literal("▶ 추가 방어력: +" + tag.getDouble(armorTagKey)).withStyle(ChatFormatting.BLUE));
+//                }
+//            }
+//
+//            AnsanPack.LOGGER.debug("툴팁 이펙트 값 확인: {} - tag={}", itemId, tag);
+//        }
+//    }
 }

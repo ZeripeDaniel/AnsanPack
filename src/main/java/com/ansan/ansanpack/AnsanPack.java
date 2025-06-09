@@ -10,6 +10,7 @@ import com.ansan.ansanpack.network.*;
 import com.ansan.ansanpack.gui.UpgradeContainer;
 import com.ansan.ansanpack.item.ModCreativeTabs;
 import com.ansan.ansanpack.item.ModItems;
+import com.ansan.ansanpack.skills.ModAttributes;
 import com.ansan.ansanpack.sound.ModSoundEvents;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.resources.ResourceLocation;
@@ -64,6 +65,7 @@ public class AnsanPack {
         ModItems.ITEMS.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
         MENUS.register(modEventBus);
+        ModAttributes.ATTRIBUTES.register(modEventBus);
 
 
 
