@@ -97,7 +97,7 @@ public class UpgradeScreen extends AbstractContainerScreen<UpgradeContainer> {
         super.renderLabels(guiGraphics, mouseX, mouseY);
         refreshUpgradeInfo();
 
-        String chanceText = String.format("성공률: %.1f%%", syncedChance * 100);
+        String chanceText = String.format("성공률: %.2f%%", syncedChance * 100);
         guiGraphics.drawString(font, chanceText, 8, 60, 0xFFFFFF);
 
         guiGraphics.drawString(

@@ -14,5 +14,10 @@
   "item.ansanpack.eternity_stone": "영원의 돌",
   "key.ansanpack.toggle_card": "명함 UI 토글",
   "key.ansanpack.open_stat_window": "스탯창 호출",
-  "key.categories.misc": "기타"
+  "key.categories.misc": "기타",
+  "item.ansanpack.obsidian_helmet": "심연의 투구",
+  "item.ansanpack.obsidian_chestplate": "심연의 흉갑",
+  "item.ansanpack.obsidian_leggings": "심연의 각반",
+  "item.ansanpack.obsidian_boots": "심연의 장화"
+
 }

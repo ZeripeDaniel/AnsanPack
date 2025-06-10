@@ -29,6 +29,10 @@ public class ModCreativeTabs {
                         output.accept(ModItems.MAJOR_HEALING_POTION.get());
                         output.accept(ModItems.SUPER_HEALING_POTION.get());
                         output.accept(ModItems.RANDOM_PET_BOX.get());
+                        output.accept(ModItems.OBSIDIAN_HELMET.get());
+                        output.accept(ModItems.OBSIDIAN_BOOTS.get());
+                        output.accept(ModItems.OBSIDIAN_CHESTPLATE.get());
+                        output.accept(ModItems.OBSIDIAN_LEGGINGS.get());
 
                     })
                     .build());

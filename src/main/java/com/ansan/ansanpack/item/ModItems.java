@@ -7,6 +7,10 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import net.minecraft.world.item.ArmorItem;
+import net.minecraft.world.item.ArmorMaterials;
+import net.minecraft.world.item.ArmorItem.Type;
+
 public class ModItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, AnsanPack.MODID);
 
@@ -24,5 +28,10 @@ public class ModItems {
     public static final RegistryObject<Item> HOLY_POTION = ITEMS.register("holy_potion", () -> new CustomPotionItem(new Item.Properties().stacksTo(16), 0.05f, 300, true)); // 디버프 제거 전용
     public static final RegistryObject<Item> RANDOM_PET_BOX = ITEMS.register("random_pet_box", () -> new RandomItemBox(new Item.Properties().stacksTo(1)));
     public static final RegistryObject<Item> ETERNITY_STONE = ITEMS.register("eternity_stone", () -> new Item(new Item.Properties().stacksTo(64)));
+
+    public static final RegistryObject<Item> OBSIDIAN_HELMET = ITEMS.register("obsidian_helmet", () -> new ArmorItem(new ModArmorMaterial(), ArmorItem.Type.HELMET, new Item.Properties()));
+    public static final RegistryObject<Item> OBSIDIAN_CHESTPLATE = ITEMS.register("obsidian_chestplate", () -> new ArmorItem(new ModArmorMaterial(), ArmorItem.Type.CHESTPLATE, new Item.Properties()));
+    public static final RegistryObject<Item> OBSIDIAN_LEGGINGS = ITEMS.register("obsidian_leggings", () -> new ArmorItem(new ModArmorMaterial(), ArmorItem.Type.LEGGINGS, new Item.Properties()));
+    public static final RegistryObject<Item> OBSIDIAN_BOOTS = ITEMS.register("obsidian_boots", () -> new ArmorItem(new ModArmorMaterial(), ArmorItem.Type.BOOTS, new Item.Properties()));
 
 }
