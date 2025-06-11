@@ -1,6 +1,7 @@
 package com.ansan.ansanpack.client;
 
 import com.ansan.ansanpack.AnsanPack;
+import com.ansan.ansanpack.client.level.LocalCombatPowerData;
 import com.ansan.ansanpack.client.level.LocalPlayerCardData;
 import com.ansan.ansanpack.client.level.LocalPlayerLevelData;
 import com.ansan.ansanpack.client.level.LocalPlayerStatData;
@@ -8,6 +9,7 @@ import com.ansan.ansanpack.gui.StatScreen;
 import com.ansan.ansanpack.network.MessageRequestMoneyOnly;
 import com.ansan.ansanpack.network.MessageRequestSaveLevel;
 import com.ansan.ansanpack.network.MessageRequestSaveStats;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
@@ -23,7 +25,6 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = AnsanPack.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class LevelHudOverlay {
 
-    // HUD 위치 상태 열거형 정의
     enum HudState {
         OFF, LEFT, RIGHT;
 
@@ -84,31 +85,39 @@ public class LevelHudOverlay {
         int x = (state == HudState.RIGHT) ? screenWidth - 130 : 10;
         int y = 10;
 
-        // 배경 박스: 120x60
         gui.fill(x, y, x + 120, y + 60, 0x80000000);
-
-        // 플레이어 정보
         gui.blit(player.getSkinTextureLocation(), x + 4, y + 4, 8, 8, 8, 8, 64, 64);
-        gui.drawString(mc.font, player.getName(), x + 24, y + 4, 0xFFFFFF);
-        gui.drawString(mc.font, "안공: " + LocalPlayerCardData.INSTANCE.getMoney(), x + 24, y + 16, 0xDDFF55);
-        gui.drawString(mc.font, "LV. " + LocalPlayerLevelData.INSTANCE.getLevel(), x + 24, y + 28, 0x55FFFF);
 
-        // 경험치 시각적 표현
+        PoseStack pose = gui.pose();
+        pose.pushPose();
+        pose.scale(0.75f, 0.75f, 0.75f);
+
+        gui.drawString(mc.font, player.getName().getString(), (int) ((x + 24) / 0.75f), (int) ((y + 4) / 0.75f), 0xFFFFFF);
+        gui.drawString(mc.font, "안공: " + LocalPlayerCardData.INSTANCE.getMoney(), (int) ((x + 24) / 0.75f), (int) ((y + 16) / 0.75f), 0xDDFF55);
+        gui.drawString(mc.font, "LV. " + LocalPlayerLevelData.INSTANCE.getLevel(), (int) ((x + 24) / 0.75f), (int) ((y + 28) / 0.75f), 0x55FFFF);
+        gui.drawString(mc.font, "전투력: " + String.format("%.2f", LocalCombatPowerData.get()), (int) ((x + 24) / 0.75f), (int) ((y + 40) / 0.75f), 0xFFAA55);
+
+        pose.popPose();
+
+        // 경험치 바
         double exp = LocalPlayerLevelData.INSTANCE.getExp();
-        double maxExp = LocalPlayerLevelData.INSTANCE.getExpToNextLevel(); // ✅ 고정값으로
+        double maxExp = LocalPlayerLevelData.INSTANCE.getExpToNextLevel();
         double ratio = exp / maxExp;
         int barWidth = 90;
         int barHeight = 4;
         int barX = x + 20;
-        int barY = y + 41;
+        int barY = y + 52;
 
-// 바 배경
         gui.fill(barX, barY, barX + barWidth, barY + barHeight, 0xFF333333);
-// 바 채움
         gui.fill(barX, barY, barX + (int) (barWidth * ratio), barY + barHeight, 0xFF00FF00);
-// 수치 표시
-        gui.drawString(mc.font, String.format("%.3f / %.3f", exp, maxExp), barX, barY + 7, 0xAAAAAA);
 
+        // 경험치 수치 작게 표시
+        PoseStack pose2 = gui.pose();
+        pose2.pushPose();
+        pose2.scale(0.65f, 0.65f, 0.65f);
+        gui.drawString(mc.font, String.format("%.2f / %.2f", exp, maxExp),
+                (int) (barX + (barX / 2) / 0.65f), (int) ((barY) / 0.65f), 0xAAAAAA);
+        pose2.popPose();
     }
 
     private static int getScore(LocalPlayer player) {

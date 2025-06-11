@@ -1,15 +1,19 @@
 package com.ansan.ansanpack.item;
 
 import com.ansan.ansanpack.AnsanPack;
-import net.minecraft.world.item.CreativeModeTabs;
-import net.minecraft.world.item.Item;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.*;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
-import net.minecraft.world.item.ArmorItem;
-import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.ArmorItem.Type;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 public class ModItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, AnsanPack.MODID);
@@ -33,5 +37,17 @@ public class ModItems {
     public static final RegistryObject<Item> OBSIDIAN_CHESTPLATE = ITEMS.register("obsidian_chestplate", () -> new ArmorItem(new ModArmorMaterial(), ArmorItem.Type.CHESTPLATE, new Item.Properties()));
     public static final RegistryObject<Item> OBSIDIAN_LEGGINGS = ITEMS.register("obsidian_leggings", () -> new ArmorItem(new ModArmorMaterial(), ArmorItem.Type.LEGGINGS, new Item.Properties()));
     public static final RegistryObject<Item> OBSIDIAN_BOOTS = ITEMS.register("obsidian_boots", () -> new ArmorItem(new ModArmorMaterial(), ArmorItem.Type.BOOTS, new Item.Properties()));
+
+//    public static final RegistryObject<Item> INVENTORY_SAVE_TICKET = ITEMS.register("inventory_save_ticket",() -> new Item(new Item.Properties().stacksTo(64)));
+    public static final RegistryObject<Item> INVENTORY_SAVE_TICKET =
+        ITEMS.register("inventory_save_ticket", () -> new Item(new Item.Properties().stacksTo(64)) {
+            @Override
+            public void appendHoverText(@NotNull ItemStack stack, @Nullable Level world, @NotNull List<Component> tooltip, @NotNull TooltipFlag flag) {
+                tooltip.add(Component.translatable("item.ansanpack.inventory_save_ticket.tooltip_1"));
+                tooltip.add(Component.translatable("item.ansanpack.inventory_save_ticket.tooltip_2").withStyle(ChatFormatting.GOLD));
+            }
+        });
+
+
 
 }

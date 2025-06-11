@@ -232,6 +232,19 @@ public class AnsanPack {
                     MessageLevelUpNotify::decode,
                     MessageLevelUpNotify::handle
             );
+            AnsanPack.NETWORK.registerMessage(packetId++,
+                    MessageSyncCombatPower.class,
+                    MessageSyncCombatPower::encode,
+                    MessageSyncCombatPower::decode,
+                    MessageSyncCombatPower::handle
+            );
+
+            AnsanPack.NETWORK.registerMessage(packetId++,
+                    MessageRequestCombatPowerRefresh.class,
+                    MessageRequestCombatPowerRefresh::encode,
+                    MessageRequestCombatPowerRefresh::decode,
+                    MessageRequestCombatPowerRefresh::handle
+            );
 
         });
 

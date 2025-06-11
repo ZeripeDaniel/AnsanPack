@@ -3,6 +3,7 @@ package com.ansan.ansanpack.client;
 import com.ansan.ansanpack.AnsanPack;
 import com.ansan.ansanpack.client.level.LocalPlayerLevelData;
 import com.ansan.ansanpack.client.level.LocalPlayerStatData;
+import com.ansan.ansanpack.network.MessageRequestCombatPowerRefresh;
 import com.ansan.ansanpack.network.MessageRequestMoneyOnly;
 import com.ansan.ansanpack.network.MessageRequestSaveLevel;
 
@@ -53,7 +54,6 @@ public class LevelTickHandler {
             );
         }
 
-        // 5초마다 요청하고 싶다면:
         if (money_tickCounter >= MONEY_SAVE_INTERVAL_TICKS) {
             money_tickCounter = 0;
             AnsanPack.NETWORK.sendToServer(new MessageRequestMoneyOnly());
@@ -69,6 +69,10 @@ public class LevelTickHandler {
 
             AnsanPack.LOGGER.info("[머니][레벨 상태] LV.{} | EXP: {:.3f} / {:.3f}", level, exp, maxExp);
             AnsanPack.LOGGER.info("[머니][스탯 상태] 힘: {}, 민첩: {}, 지능: {}, 행운: {}, AP: {}", str, agi, intel, luck, ap);
+            // ✅ 전투력 재계산 요청 추가
+            AnsanPack.NETWORK.sendToServer(new MessageRequestCombatPowerRefresh());
+
+            AnsanPack.LOGGER.warn("[AutoSave] 전투력 재계산 요청 전송함");
         }
 
     }

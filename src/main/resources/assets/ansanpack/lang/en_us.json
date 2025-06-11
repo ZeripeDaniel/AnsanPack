@@ -18,6 +18,9 @@
   "item.ansanpack.obsidian_helmet": "심연의 투구",
   "item.ansanpack.obsidian_chestplate": "심연의 흉갑",
   "item.ansanpack.obsidian_leggings": "심연의 각반",
-  "item.ansanpack.obsidian_boots": "심연의 장화"
+  "item.ansanpack.obsidian_boots": "심연의 장화",
+  "item.ansanpack.inventory_save_ticket": "인벤토리 세이브권",
+  "item.ansanpack.inventory_save_ticket.tooltip_1": "사망 시 인벤토리를 복구할 수 있는 특별한 티켓",
+  "item.ansanpack.inventory_save_ticket.tooltip_2": "지긋지긋한 묘비는 이제 안녕! 인벤토리 세이브권을 이용해 쾌적한 하루를 보내세요."
 
 }

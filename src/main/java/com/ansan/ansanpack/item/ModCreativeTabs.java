@@ -33,7 +33,7 @@ public class ModCreativeTabs {
                         output.accept(ModItems.OBSIDIAN_BOOTS.get());
                         output.accept(ModItems.OBSIDIAN_CHESTPLATE.get());
                         output.accept(ModItems.OBSIDIAN_LEGGINGS.get());
-
+                        output.accept(ModItems.INVENTORY_SAVE_TICKET.get());
                     })
                     .build());
 }
