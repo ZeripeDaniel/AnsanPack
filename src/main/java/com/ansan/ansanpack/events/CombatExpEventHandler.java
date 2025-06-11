@@ -10,6 +10,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.network.NetworkDirection;
 
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane;
+
 @Mod.EventBusSubscriber(modid = AnsanPack.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class CombatExpEventHandler {
 
@@ -45,9 +47,16 @@ public class CombatExpEventHandler {
             baseExp *= 1.6; // 중간몹 보정
         } else if (maxHealth >= 200 && maxHealth < 400) {
             baseExp *= 2.0; // 보스급 보정
-        } else if (maxHealth >= 400) {
+        } else if (maxHealth >= 400 && maxHealth < 998) {
             baseExp *= 3.0; // 보스급 보정
+        } else if (maxHealth >= 998 && maxHealth < 2000) {
+            baseExp *= 4.0;
+        } else if (maxHealth >= 2000 && maxHealth < 9999) {
+            baseExp *= 30;
+        } else if (maxHealth >= 9999 && maxHealth < 60000) {
+            baseExp *= 40;
         }
+
 
         return Math.round(baseExp * 100.0) / 100.0; // 소수점 2자리 반올림
     }
