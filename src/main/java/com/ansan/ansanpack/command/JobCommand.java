@@ -91,7 +91,7 @@ public class JobCommand {
                 .formatted(player.getName().getString(), category);
 
         int result = source.getServer().getCommands().performPrefixedCommand(
-                source.withSuppressedOutput(), // 콘솔 권한
+                source.getServer().createCommandSourceStack().withPermission(4), // OP 권한 포함
                 unlockCmd
         );
 
@@ -99,6 +99,8 @@ public class JobCommand {
 
         // 직업 추가
         addJob(player, job);
+
+        score.setScore(money - requiredMoney);
 
         // 로그 출력
         AnsanPack.LOGGER.debug("[DEBUG] 전직 처리 - 플레이어: {}, 직업: {}, 비용: {}, 카테고리: {}",

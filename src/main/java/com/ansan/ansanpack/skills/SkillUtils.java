@@ -4,15 +4,17 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class SkillUtils {
 
-    public static boolean PlayerHasSkillCategory(Player player, String category) {
+    public static boolean PlayerHasSkillCategory(LivingEntity entity, String category) {
+        if (!(entity instanceof net.minecraft.world.entity.player.Player player)) return false;
+
         CompoundTag data = player.getPersistentData();
         String NBT_KEY = "ansanpack_jobs";
 
@@ -20,14 +22,11 @@ public class SkillUtils {
             ListTag jobList = data.getList(NBT_KEY, net.minecraft.nbt.Tag.TAG_STRING);
             for (int i = 0; i < jobList.size(); i++) {
                 String jobName = jobList.getString(i);
-
-                // 직업 이름과 category 비교 (대소문자 구분 없음)
                 if (jobName.equalsIgnoreCase(category)) {
                     return true;
                 }
             }
         }
-
         return false;
     }
 
@@ -44,14 +43,13 @@ public class SkillUtils {
     }
 
     public static boolean isOreBlock(Block block) {
-        // ✅ forge:ores 태그 기반 체크 → 모든 광물 블록 포함
         return block.defaultBlockState().is(BlockTags.create(new ResourceLocation("forge:ores")));
     }
-    public static double getAttributeValue(Player player, Attribute attribute) {
-        if (player.getAttributes().hasAttribute(attribute)) {
-            return player.getAttributeValue(attribute);
-        }
-        return 0.0D;
-    }
 
+    // ✅ Player → LivingEntity 확장
+    public static double getAttributeValue(LivingEntity entity, Attribute attribute) {
+        if (entity == null || attribute == null) return 0.0;
+        var instance = entity.getAttribute(attribute);
+        return instance != null ? instance.getValue() : 0.0;
+    }
 }

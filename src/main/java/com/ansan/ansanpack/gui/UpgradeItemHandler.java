@@ -68,7 +68,7 @@ public class UpgradeItemHandler extends ItemStackHandler implements Container {
                 Optional<UpgradeConfigManager.UpgradeConfig> configOpt = UpgradeConfigManager.getConfig(item.getItem());
                 int maxLevel = configOpt.map(c -> c.maxLevel).orElse(0);
 
-                AnsanPack.LOGGER.debug("[DEBUG] 확률 전송: {}, 레벨: {}, 확률: {}, 최대레벨: {}", itemId, level, chance, maxLevel);
+                //AnsanPack.LOGGER.debug("[DEBUG] 확률 전송: {}, 레벨: {}, 확률: {}, 최대레벨: {}", itemId, level, chance, maxLevel);
 
                 AnsanPack.NETWORK.sendTo(
                         new MessageUpgradeChanceSync(itemId.toString(), level, chance, maxLevel),

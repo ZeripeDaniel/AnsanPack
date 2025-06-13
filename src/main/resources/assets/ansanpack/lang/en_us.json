@@ -21,6 +21,17 @@
   "item.ansanpack.obsidian_boots": "심연의 장화",
   "item.ansanpack.inventory_save_ticket": "인벤토리 세이브권",
   "item.ansanpack.inventory_save_ticket.tooltip_1": "사망 시 인벤토리를 복구할 수 있는 특별한 티켓",
-  "item.ansanpack.inventory_save_ticket.tooltip_2": "지긋지긋한 묘비는 이제 안녕! 인벤토리 세이브권을 이용해 쾌적한 하루를 보내세요."
+  "item.ansanpack.inventory_save_ticket.tooltip_2": "지긋지긋한 묘비는 이제 안녕! 인벤토리 세이브권을 이용해 쾌적한 하루를 보내세요.",
+  "item.ansanpack.mana_blaster": "마나 블래스터",
+  "item.ansanpack.mana_blaster.tooltip": "연사 기준치: %s회",
+
+  "item.ansanpack.magic_bullet_low": "하급 마력탄",
+  "item.ansanpack.magic_bullet_low.tooltip": "마법 공격력: %s",
+
+  "item.ansanpack.magic_bullet_admin": "어드민 마력탄",
+  "item.ansanpack.magic_bullet_admin.tooltip": "마법 공격력: %s",
+
+  "item.ansanpack.magic_magazine": "마력 탄창",
+  "item.ansanpack.magic_magazine.tooltip": "장전 수: %s / 128 탄 종류: %s 공격력: %.1f"
 
 }

@@ -99,14 +99,14 @@ public class WeaponUpgradeSystem {
         UpgradeConfigManager.UpgradeConfig config = configOpt.get();
 
         if (currentLevel >= config.maxLevel) {
-            AnsanPack.LOGGER.warn("강화 불가: {}는 최대 강화 레벨 {}에 도달함", itemId, config.maxLevel);
+            AnsanPack.LOGGER.debug("강화 불가: {}는 최대 강화 레벨 {}에 도달함", itemId, config.maxLevel);
             return false;
         }
 
         double successChance = UpgradeChanceManager.getSuccessChance(itemId, currentLevel);
         boolean success = Math.random() < successChance;
 
-        AnsanPack.LOGGER.info("강화 시도 - 확률: {}% → {}", successChance * 100, success ? "성공" : "실패");
+        AnsanPack.LOGGER.debug("강화 시도 - 확률: {}% → {}", successChance * 100, success ? "성공" : "실패");
 
 
         if (success) {

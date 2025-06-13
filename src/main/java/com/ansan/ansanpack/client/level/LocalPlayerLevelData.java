@@ -49,7 +49,7 @@ public class LocalPlayerLevelData {
     }
     public void setExp(double exp) {
         this.exp = Math.max(0, exp); // 음수 방지
-        AnsanPack.LOGGER.warn("[SET] exp 초기화: " + exp);
+        //AnsanPack.LOGGER.warn("[SET] exp 초기화: " + exp);
     }
     public double getExpToNextLevel() {
         return (100 * Math.pow(level, 2.0));  // 난이도: 중간 이상

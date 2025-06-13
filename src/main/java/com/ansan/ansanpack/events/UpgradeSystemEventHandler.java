@@ -123,8 +123,8 @@ public class UpgradeSystemEventHandler {
                     addModifier(event, Attributes.LUCK, UPGRADE_LUCK_UUID, "행운", value);
         }
 
-        AnsanPack.LOGGER.debug("[효과 적용] {}: {} +{} (슬롯: {})",
-                stack.getDisplayName().getString(), effect, value, slot.getName());
+//        AnsanPack.LOGGER.debug("[효과 적용] {}: {} +{} (슬롯: {})",
+//                stack.getDisplayName().getString(), effect, value, slot.getName());
     }
 
 

@@ -133,7 +133,7 @@ private void tryUpgrade() {
     int upgradeSlotIndex = menu.upgradeSlot.index;
     int stoneSlotIndex = menu.reinforceStoneSlot.index;
 
-    AnsanPack.LOGGER.debug("Sending upgrade request: {}, {}", upgradeSlotIndex, stoneSlotIndex);
+    //AnsanPack.LOGGER.debug("Sending upgrade request: {}, {}", upgradeSlotIndex, stoneSlotIndex);
 
     ItemStack weapon = menu.getSlot(upgradeSlotIndex).getItem();
     ItemStack stone = menu.getSlot(stoneSlotIndex).getItem();
@@ -151,7 +151,7 @@ private void tryUpgrade() {
     //AnsanPack.LOGGER.debug("에라이싯팔레벨 {}, {}", currentLevel, syncedMaxLevel);
     // 🔥 강화 시도 패킷 전송
     AnsanPack.NETWORK.sendToServer(new MessageUpgradeRequest(upgradeSlotIndex, stoneSlotIndex));
-    AnsanPack.LOGGER.debug("패킷 전송 시작: 업그레이드 슬롯={}, 강화석 슬롯={}", upgradeSlotIndex, stoneSlotIndex);
+    //AnsanPack.LOGGER.debug("패킷 전송 시작: 업그레이드 슬롯={}, 강화석 슬롯={}", upgradeSlotIndex, stoneSlotIndex);
 }
 
 
@@ -181,7 +181,7 @@ private void tryUpgrade() {
     public static void setChance(String itemId, int level, double chance, int maxLevel) {
         syncedChance = chance;
         syncedMaxLevel = maxLevel;
-        AnsanPack.LOGGER.debug("[DEBUG] GUI 확률 적용됨 → 아이템: {}, 레벨: {}, 확률: {}, 최대레벨: {}", itemId, level, chance, maxLevel);
+        //AnsanPack.LOGGER.debug("[DEBUG] GUI 확률 적용됨 → 아이템: {}, 레벨: {}, 확률: {}, 최대레벨: {}", itemId, level, chance, maxLevel);
     }
 
 

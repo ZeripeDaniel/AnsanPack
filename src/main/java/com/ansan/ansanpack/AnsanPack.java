@@ -6,6 +6,7 @@ import com.ansan.ansanpack.config.*;
 import com.ansan.ansanpack.events.EntityAttributeModifier;
 import com.ansan.ansanpack.events.MobDropEventHandler;
 import com.ansan.ansanpack.events.UpgradeSystemEventHandler;
+import com.ansan.ansanpack.item.magic.ModMagicEntities;
 import com.ansan.ansanpack.network.*;
 import com.ansan.ansanpack.gui.UpgradeContainer;
 import com.ansan.ansanpack.item.ModCreativeTabs;
@@ -67,7 +68,7 @@ public class AnsanPack {
         MENUS.register(modEventBus);
         ModAttributes.ATTRIBUTES.register(modEventBus);
 
-
+        ModMagicEntities.ENTITIES.register(modEventBus); // modEventBus는 FMLJavaModLoadingContext.get().getModEventBus()
 
         // Register CoinInteractionHandler to the Forge event bus
         MinecraftForge.EVENT_BUS.register(new CoinInteractionHandler());

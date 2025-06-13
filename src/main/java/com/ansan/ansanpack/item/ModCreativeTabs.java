@@ -1,6 +1,8 @@
 package com.ansan.ansanpack.item;
 
 import com.ansan.ansanpack.AnsanPack;
+import com.ansan.ansanpack.item.magic.MagicBulletItem;
+import com.ansan.ansanpack.item.magic.MagicBulletItem_Admin;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
@@ -34,6 +36,10 @@ public class ModCreativeTabs {
                         output.accept(ModItems.OBSIDIAN_CHESTPLATE.get());
                         output.accept(ModItems.OBSIDIAN_LEGGINGS.get());
                         output.accept(ModItems.INVENTORY_SAVE_TICKET.get());
+                        output.accept(ModItems.MANA_BLASTER.get());
+                        output.accept(ModItems.MAGIC_MAGAZINE.get().getDefaultInstance());
+                        output.accept(MagicBulletItem.createBullet(3.5f));
+                        output.accept(MagicBulletItem_Admin.createBullet(9999f));
                     })
                     .build());
 }

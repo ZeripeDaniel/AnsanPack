@@ -1,6 +1,10 @@
 package com.ansan.ansanpack.item;
 
 import com.ansan.ansanpack.AnsanPack;
+import com.ansan.ansanpack.item.magic.MagicBulletItem;
+import com.ansan.ansanpack.item.magic.MagicBulletItem_Admin;
+import com.ansan.ansanpack.item.magic.MagicMagazineItem;
+import com.ansan.ansanpack.item.magic.ManaBlasterItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.*;
@@ -47,6 +51,17 @@ public class ModItems {
                 tooltip.add(Component.translatable("item.ansanpack.inventory_save_ticket.tooltip_2").withStyle(ChatFormatting.GOLD));
             }
         });
+
+    ////Magic
+    public static final RegistryObject<Item> MAGIC_BULLET_LOW =
+            ITEMS.register("magic_bullet_low", () -> new MagicBulletItem(new Item.Properties()));
+    public static final RegistryObject<Item> MAGIC_BULLET_ADMIN =
+            ITEMS.register("magic_bullet_admin", () -> new MagicBulletItem_Admin(new Item.Properties()));
+    public static final RegistryObject<Item> MAGIC_MAGAZINE =
+            ITEMS.register("magic_magazine", () -> new MagicMagazineItem(new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> MANA_BLASTER =
+            ITEMS.register("mana_blaster", () -> new ManaBlasterItem(new Item.Properties().stacksTo(1)));
+
 
 
 
